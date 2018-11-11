@@ -1,0 +1,157 @@
+package de.nerogar.sandstormBot.player;
+
+import de.nerogar.sandstormBot.Main;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageChannel;
+
+import java.util.List;
+
+public class MusicPlayerGui {
+
+	private MessageChannel channel;
+	private MusicPlayer    musicPlayer;
+
+	private Message playlistNamesMessage;
+	private Message playerMessage;
+	private Message playlistMessage;
+
+	public MusicPlayerGui(MessageChannel channel, MusicPlayer musicPlayer) {
+		this.channel = channel;
+		this.musicPlayer = musicPlayer;
+		create();
+	}
+
+	private void create() {
+		channel.sendMessage("Sandstom Bot connected!").queue();
+		playlistNamesMessage = channel.sendMessage("```playlist names```").complete();
+		playlistMessage = channel.sendMessage("```playlist```").complete();
+		playerMessage = channel.sendMessage("```player```").complete();
+
+		playerMessage.addReaction("⏯").queue();
+		playerMessage.addReaction("⏮").queue();
+		playerMessage.addReaction("⏭").queue();
+
+	}
+
+	private String formatTime(long ms) {
+		long hours = ms / (1000 * 60 * 60);
+		ms -= (hours * 1000 * 60 * 60);
+		long minutes = ms / (1000 * 60);
+		ms -= (minutes * 1000 * 60);
+		long seconds = ms / (1000);
+
+		if (hours > 0) {
+			return String.format("%d:%02d:%02d", hours, minutes, seconds);
+		} else {
+			return String.format("%d:%02d", minutes, seconds);
+		}
+	}
+
+	public void update() {
+		// ▶ ❚❚
+		StringBuilder sb = new StringBuilder();
+		sb.append("```");
+
+		Song currentSong = musicPlayer.getCurrentSong();
+
+		if (currentSong == null) {
+			sb.append("not playing anything\n");
+			sb.append("⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛");
+		} else {
+			if (musicPlayer.isPaused()) sb.append("❚❚ ");
+			sb.append(currentSong.name);
+			sb.append('\n');
+
+			//sb.append("Volume: 100%").append('\n');
+
+			sb.append(currentSong.request).append(" (").append(currentSong.user).append(")");
+			sb.append('\n');
+
+			long position = musicPlayer.getCurrentPosition();
+			long duration = musicPlayer.getCurrentSong().duration;
+			int progress = (int) Math.round(((double) position / duration) * 26);
+			String progressString = formatTime(position) + "/" + formatTime(duration);
+
+			for (int i = 0; i < progress; i++) sb.append('⬜');
+			for (int i = 0; i < (26 - progress); i++) sb.append('⬛');
+			sb.append(" ").append(progressString).append('\n');
+		}
+
+		sb.append("```");
+		channel.editMessageById(playerMessage.getId(), sb.toString()).queue();
+	}
+
+	public void updatePlaylist() {
+
+		int ENTRIES = Main.SETTINGS.playlistGuiEntries;
+		int PADDING = Main.SETTINGS.playlistGuiPadding;
+
+		PlayList currentPlayList = musicPlayer.getCurrentPlaylist();
+		List<Song> songs = currentPlayList.getSongs();
+		Song currentPlaying = currentPlayList.getCurrentSong();
+
+		int currentId = 0;
+		if (currentPlaying != null) {
+			for (; currentPlaying != songs.get(currentId); currentId++) ;
+		}
+		int start = Math.max(0, currentId - PADDING);
+		int end = Math.min(start + ENTRIES, songs.size());
+		start = Math.max(0, end - ENTRIES);
+
+		long duration = 0;
+		for (Song song : currentPlayList.getSongs()) {
+			duration += song.duration;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("```");
+		sb.append("====================\n");
+		sb.append(currentPlayList.name);
+		sb.append(" [").append(currentPlayList.getSongs().size()).append(", ").append(formatTime(duration)).append("]");
+		sb.append('\n');
+		sb.append("====================\n");
+
+		for (int i = start; i < end; i++) {
+			if (i == currentId) sb.append("▶ ");
+			else sb.append("  ");
+
+			sb.append("[").append(i).append("] ");
+			sb.append("[").append(formatTime(songs.get(i).duration)).append("] ");
+			sb.append(songs.get(i).name);
+			//sb.append(" (").append(songs.get(i).user).append(")");
+
+			sb.append('\n');
+		}
+
+		sb.append("```");
+		channel.editMessageById(playlistMessage.getId(), sb.toString()).queue();
+	}
+
+	public void updatePlaylistNames() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("```");
+		sb.append("====================\n");
+		sb.append("Playlists");
+		sb.append('\n');
+		sb.append("====================\n");
+
+		for (PlayList playList : musicPlayer.getPlayLists()) {
+			if (playList == musicPlayer.getCurrentPlaylist()) sb.append("▶ ");
+			else sb.append("  ");
+
+			long duration = 0;
+			for (Song song : playList.getSongs()) {
+				duration += song.duration;
+			}
+
+			sb.append(playList.name);
+			sb.append(" [").append(playList.getSongs().size()).append(", ").append(formatTime(duration)).append("]");
+			sb.append("\n");
+
+		}
+
+		sb.append("```");
+		channel.editMessageById(playlistNamesMessage.getId(), sb.toString()).queue();
+	}
+
+}

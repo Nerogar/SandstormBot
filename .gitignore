@@ -1,0 +1,11 @@
+# Intellij
+.idea/
+*.iml
+out/
+
+# Run
+run/
+
+# gradle
+.gradle/
+build/
