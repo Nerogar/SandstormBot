@@ -21,10 +21,11 @@ import java.util.Map;
 
 public class Main extends Thread {
 
-	public static final String MUSIC_CACHE_DIRECTORY = "musicCache/";
-	public static       String DOWNLOAD_FOLDER       = MUSIC_CACHE_DIRECTORY + "downloading/";
-	public static final String MUSIC_EXTENSION       = ".opus";
-	public static final float  VOLUME                = -24;
+	public static final String MUSIC_CACHE_DIRECTORY   = "musicCache/";
+	public static final String MUSIC_CONVERT_DIRECTORY = "musicCache/converting/";
+	public static       String DOWNLOAD_FOLDER         = MUSIC_CACHE_DIRECTORY + "downloading/";
+	public static final String MUSIC_EXTENSION         = ".opus";
+	public static final float  VOLUME                  = -24;
 
 	public static PlayerSettings SETTINGS;
 
@@ -164,13 +165,15 @@ public class Main extends Thread {
 	}
 
 	public synchronized void cmdPlaylist(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (commandSplit.length <= 2) return;
+
 		if (commandSplit[1].equalsIgnoreCase("create")) {
-			String nameString = commandString.substring(1 + (SETTINGS.commandPrefix + "playlist create").length());
+			String nameString = commandString.split("\\s+", 3)[2];
 
 			musicPlayer.createPlaylist(nameString);
 			musicPlayerGui.updatePlaylistNames();
 		} else if (commandSplit[1].equalsIgnoreCase("switch")) {
-			String nameString = commandString.substring(1 + (SETTINGS.commandPrefix + "playlist switch").length());
+			String nameString = commandString.split("\\s+", 3)[2];
 
 			musicPlayer.switchPlaylist(nameString);
 			musicPlayerGui.updatePlaylistNames();
@@ -182,19 +185,29 @@ public class Main extends Thread {
 	}
 
 	public synchronized void cmdAdd(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		String queryString = commandString.substring(1 + (SETTINGS.commandPrefix + "add").length());
+		commandSplit = commandString.split("\\s+", 2);
 
-		List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
-		addInternal(songs);
+		if (commandSplit.length > 1) {
+			String queryString = commandSplit[1];
+
+			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
+			addInternal(songs);
+		}
+
 	}
 
 	public synchronized void cmdAddL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (!checkPrivilege(member)) return;
 
-		String queryString = commandString.substring(1 + (SETTINGS.commandPrefix + "addl").length());
+		commandSplit = commandString.split("\\s+", 2);
 
-		List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
-		addInternal(songs);
+		if (commandSplit.length > 1) {
+			String queryString = commandSplit[1];
+
+			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
+			addInternal(songs);
+		}
+
 	}
 
 	private void addInternal(List<Song> songs) {
@@ -206,11 +219,14 @@ public class Main extends Thread {
 	}
 
 	public synchronized void cmdRemove(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		String queryString = commandString.substring(1 + (SETTINGS.commandPrefix + "remove").length()).toLowerCase();
+		commandSplit = commandString.split("\\s+", 1);
 
-		musicPlayer.removeSongs(s -> s.name.toLowerCase().contains(queryString));
-		musicPlayerGui.updatePlaylist();
-		musicPlayer.save();
+		if (commandSplit.length > 1) {
+			String query = commandSplit[1];
+			musicPlayer.removeSongs(s -> s.name.toLowerCase().contains(query));
+			musicPlayerGui.updatePlaylist();
+			musicPlayer.save();
+		}
 	}
 
 	public synchronized void cmdKick(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
@@ -221,19 +237,27 @@ public class Main extends Thread {
 	}
 
 	public synchronized void cmdQueue(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		String queryString = commandString.substring(1 + (SETTINGS.commandPrefix + "queue").length());
+		commandSplit = commandString.split("\\s+", 1);
 
-		List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
-		queueInternal(songs);
+		if (commandSplit.length > 1) {
+			String queryString = commandSplit[1];
+
+			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
+			queueInternal(songs);
+		}
 	}
 
 	public synchronized void cmdQueueL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (!checkPrivilege(member)) return;
 
-		String queryString = commandString.substring(1 + (SETTINGS.commandPrefix + "queuel").length());
+		commandSplit = commandString.split("\\s+", 1);
 
-		List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
-		queueInternal(songs);
+		if (commandSplit.length > 1) {
+			String queryString = commandSplit[1];
+
+			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
+			queueInternal(songs);
+		}
 	}
 
 	public void queueInternal(List<Song> songs) {
@@ -306,6 +330,8 @@ public class Main extends Thread {
 		} else {
 			musicPlayer.testCache();
 		}
+
+		//System.out.println("ping: " + jda.getPing());
 	}
 
 	public void setActive(boolean isActive) {
@@ -347,6 +373,7 @@ public class Main extends Thread {
 			return;
 		}
 		new File(DOWNLOAD_FOLDER).mkdirs();
+		new File(MUSIC_CONVERT_DIRECTORY).mkdirs();
 
 		MusicProviders.init();
 

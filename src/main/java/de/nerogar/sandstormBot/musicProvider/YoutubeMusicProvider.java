@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class YoutubeMusicProvider implements IMusicProvider {
@@ -26,6 +27,8 @@ public class YoutubeMusicProvider implements IMusicProvider {
 				query
 		};
 		String youtubeResponse = MusicProviders.executeBlocking(youtubeDLRequest, true);
+
+		if (youtubeResponse == null) return Collections.emptyList();
 
 		String[] jsonStrings = youtubeResponse.split("\n");
 		ObjectMapper objectMapper = new ObjectMapper();
