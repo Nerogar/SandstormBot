@@ -29,7 +29,8 @@ public class PlayQueue extends PlayList {
 	}
 
 	@Override
-	public void setShuffled(boolean shuffled) {
-		// shuffling is not allowed
+	public void setOrder(String order) {
+		// the order is always default
 	}
+
 }

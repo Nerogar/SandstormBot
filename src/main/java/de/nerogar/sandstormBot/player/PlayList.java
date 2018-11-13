@@ -11,9 +11,14 @@ import java.util.function.Predicate;
 
 public class PlayList {
 
+	public static final String ORDER_DEFAULT       = "default";
+	public static final String ORDER_SHUFFLE_TRACK = "shuffle-track";
+	public static final String ORDER_SHUFFLE_ALBUM = "shuffle-album";
+
 	public String     name;
 	public List<Song> songs;
-	public boolean    shuffled;
+	public String     order;
+	public int        seed;
 	public int        currentId;
 
 	private int[] nextArray;
@@ -21,15 +26,17 @@ public class PlayList {
 
 	public PlayList(JsonNode jsonNode) {
 		this(jsonNode.get("name").asText());
+		order = jsonNode.has("order") ? jsonNode.get("order").asText() : ORDER_DEFAULT;
+		seed = jsonNode.has("seed") ? jsonNode.get("seed").asInt() : new Random().nextInt();
 		for (JsonNode songNode : jsonNode.get("songs")) {
 			add(new Song(songNode));
 		}
-		shuffled = jsonNode.get("shuffled").asBoolean();
 		currentId = jsonNode.get("currentId").asInt();
 	}
 
 	public PlayList(String name) {
 		currentId = -1;
+		order = ORDER_DEFAULT;
 
 		this.name = name;
 
@@ -43,7 +50,7 @@ public class PlayList {
 			indexArray[i] = i;
 		}
 
-		if (shuffled) {
+		if (order.equals(ORDER_SHUFFLE_TRACK)) {
 			Random random = new Random();
 
 			for (int i = 0; i < indexArray.length; i++) {
@@ -77,13 +84,17 @@ public class PlayList {
 		}
 	}
 
-	public void remove(Predicate<Song> predicate) {
+	public int remove(Predicate<Song> predicate) {
+		int removed = 0;
+
 		int i = 0;
 		for (; i < songs.size(); i++) {
 			if (predicate.test(songs.get(i))) {
 				songs.remove(i);
 				if (i < currentId) currentId--;
 				i--;
+
+				removed++;
 			}
 		}
 
@@ -92,6 +103,8 @@ public class PlayList {
 		}
 
 		createSkipArrays();
+
+		return removed;
 	}
 
 	public int size() {
@@ -102,12 +115,12 @@ public class PlayList {
 		return songs;
 	}
 
-	public boolean isShuffled() {
-		return shuffled;
+	public String getOrder() {
+		return order;
 	}
 
-	public void setShuffled(boolean shuffled) {
-		this.shuffled = shuffled;
+	public void setOrder(String order) {
+		this.order = order;
 		createSkipArrays();
 	}
 

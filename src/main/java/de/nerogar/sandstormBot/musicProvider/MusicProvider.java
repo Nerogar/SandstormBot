@@ -22,15 +22,14 @@ public class MusicProvider extends Thread {
 
 			Song song = nextCache.cacheNext();
 
-			// no song should be cached, retry later
-			if (song == null) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			} else {
+			if (song != null) {
 				MusicProviders.getProvider(song.providerName).doCache(song);
+			}
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 
 		}

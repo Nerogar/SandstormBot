@@ -1,6 +1,7 @@
 package de.nerogar.sandstormBot.musicProvider;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.player.Song;
@@ -9,9 +10,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class LocalMusicProvider implements IMusicProvider {
 
@@ -29,8 +33,10 @@ public class LocalMusicProvider implements IMusicProvider {
 		try {
 			localFiles = new ArrayList<>();
 
+			Path rootPath = Paths.get(root);
+
 			Files.find(
-					Paths.get(root),
+					rootPath,
 					Integer.MAX_VALUE,
 					(filePath, fileAttr) -> {
 						String filename = filePath.getFileName().toString();
@@ -39,7 +45,9 @@ public class LocalMusicProvider implements IMusicProvider {
 					}
 			          )
 					.forEach(f -> {
-						localFiles.add(f.toString());
+						String s = rootPath.relativize(f).toString();
+						s = s.replaceAll("\\\\", "/");
+						localFiles.add(s);
 					});
 
 		} catch (IOException | IndexOutOfBoundsException e) {
@@ -63,21 +71,26 @@ public class LocalMusicProvider implements IMusicProvider {
 		ArrayList<Song> songs = new ArrayList<>();
 
 		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+
 		for (String songLocation : songLocations) {
 			try {
-				File file = new File(songLocation);
+				File file = new File(Main.SETTINGS.localFilePath + songLocation);
 
-				//ffprobe -v quiet -print_format json -show_format json input
+				// ffprobe -v quiet -print_format json -show_format input
 				String[] command = {
 						"ffprobe",
 						"-v", "quiet",
 						"-print_format", "json",
 						"-show_format",
-						songLocation
+						file.toString()
 				};
+
 				String songJsonString = MusicProviders.executeBlocking(command, true);
 
 				JsonNode songJson = objectMapper.readTree(songJsonString);
+				if (!songJson.has("format")) continue;
+
 				JsonNode jsonNode = songJson.get("format");
 				JsonNode durationString = jsonNode.get("duration");
 				long duration = 0;
@@ -85,35 +98,32 @@ public class LocalMusicProvider implements IMusicProvider {
 					duration = (long) (Double.parseDouble(durationString.asText()) * 1000);
 				}
 
-				String name;
+				String artist = null;
+				String album = null;
+				String title = null;
 				if (jsonNode.has("tags")) {
+
 					JsonNode tags = jsonNode.get("tags");
 
-					String artist = null;
-					if (tags.has("artist")) artist = tags.get("artist").asText();
-					if (tags.has("album_artist")) artist = tags.get("album_artist").asText();
+					for (Iterator<Map.Entry<String, JsonNode>> fields = tags.fields(); fields.hasNext(); ) {
+						Map.Entry<String, JsonNode> next = fields.next();
 
-					String album = null;
-					if (tags.has("album")) album = tags.get("album").asText();
+						if (next.getKey().equalsIgnoreCase("album_artist")) artist = next.getValue().asText();
+						if (next.getKey().equalsIgnoreCase("artist") && artist == null) artist = next.getValue().asText();
 
-					String title = null;
-					if (tags.has("title")) title = tags.get("title").asText();
-					else title = file.getName();
+						if (next.getKey().equalsIgnoreCase("album")) album = next.getValue().asText();
 
-					if (album != null) {
-						name = album + " - " + title;
-					} else if (artist != null) {
-						name = artist + " - " + title;
-					} else {
-						name = title;
+						if (next.getKey().equalsIgnoreCase("title")) title = next.getValue().asText();
 					}
 
+					if (title == null) title = file.getName();
+
 				} else {
-					name = file.getName();
+					title = file.getName();
 				}
 
 				String id = DigestUtils.sha256Hex(songLocation);
-				Song song = new Song(id, MusicProviders.LOCAL, songLocation, name, duration, query, user);
+				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, query, user);
 
 				songs.add(song);
 
@@ -130,7 +140,7 @@ public class LocalMusicProvider implements IMusicProvider {
 
 	@Override
 	public void doCache(Song song) {
-		MusicProviders.convert(song.id, song.location);
+		MusicProviders.convert(song.id, Main.SETTINGS.localFilePath + song.location);
 	}
 
 }

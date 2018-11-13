@@ -92,6 +92,7 @@ public class Main extends Thread {
 		commands.put(SETTINGS.commandPrefix + "queuel", this::cmdQueueL);
 		commands.put(SETTINGS.commandPrefix + "previous", this::cmdPrevious);
 		commands.put(SETTINGS.commandPrefix + "next", this::cmdNext);
+		commands.put(SETTINGS.commandPrefix + "togglepause", this::cmdTogglePause);
 		commands.put(SETTINGS.commandPrefix + "pause", this::cmdPause);
 		commands.put(SETTINGS.commandPrefix + "resume", this::cmdResume);
 		commands.put(SETTINGS.commandPrefix + "shuffle", this::cmdShuffle);
@@ -112,19 +113,25 @@ public class Main extends Thread {
 		return false;
 	}
 
-	public void acceptCommand(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public synchronized void acceptCommand(MessageChannel channel, Member member, String commandString) {
+		String[] commandSplit = commandString.split("\\s+");
 
 		Command command = commands.get(commandSplit[0]);
 
 		if (command != null) {
-			command.execute(channel, member, commandSplit, commandString);
-		}
+			Command.CommandResult result = command.execute(channel, member, commandSplit, commandString);
 
-		//cmdQueue("queue " + command, member);
+			if (result != Command.CommandResult.SUCCESS) {
+				musicPlayerGui.sendCommandFeedback(result.getMessage());
+			}
+
+		} else {
+			musicPlayerGui.sendCommandFeedback(new Command.CommandResult.UnknownCommandResult(commandString).getMessage());
+		}
 	}
 
-	public synchronized void cmdConfig(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (!checkOwner(member)) return;
+	public Command.CommandResult cmdConfig(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkOwner(member)) return Command.CommandResult.ERROR_PERMISSION;
 
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -133,20 +140,22 @@ public class Main extends Thread {
 			e.printStackTrace();
 			System.out.println("Could not load settings!");
 		}
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdScanLocal(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (!checkOwner(member)) return;
+	public Command.CommandResult cmdScanLocal(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkOwner(member)) return Command.CommandResult.ERROR_PERMISSION;
 
 		LocalMusicProvider localMusicProvider = (LocalMusicProvider) MusicProviders.getProvider(MusicProviders.LOCAL);
 		localMusicProvider.scan(SETTINGS.localFilePath);
 
 		// save that stuff somehow
 		int size = localMusicProvider.getLocalFiles().size();
-		System.out.println("scanned " + size + " files!");
+		return new Command.CommandResult(true, "scanned " + size + " files!");
 	}
 
-	public synchronized void cmdJoin(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdJoin(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (member.getVoiceState().inVoiceChannel()) {
 			VoiceChannel voiceChannel = member.getVoiceState().getChannel();
 			startupPlayer(channel);
@@ -156,16 +165,20 @@ public class Main extends Thread {
 			musicPlayerGui.updatePlaylistNames();
 			isActive = true;
 		}
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdDisconnect(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdDisconnect(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		musicPlayer.disconnect();
 		disconnectPlayer();
 		isActive = false;
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdPlaylist(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (commandSplit.length <= 2) return;
+	public Command.CommandResult cmdPlaylist(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (commandSplit.length <= 2) return new Command.CommandResult.UnknownCommandResult(commandString);
 
 		if (commandSplit[1].equalsIgnoreCase("create")) {
 			String nameString = commandString.split("\\s+", 3)[2];
@@ -177,35 +190,48 @@ public class Main extends Thread {
 
 			musicPlayer.switchPlaylist(nameString);
 			musicPlayerGui.updatePlaylistNames();
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 
 		musicPlayerGui.updatePlaylist();
 
 		musicPlayer.save();
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdAdd(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdAdd(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		commandSplit = commandString.split("\\s+", 2);
 
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
+			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
 			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
 			addInternal(songs);
+			return new Command.CommandResult(true, "added " + songs.size() + " songs");
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 
 	}
 
-	public synchronized void cmdAddL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (!checkPrivilege(member)) return;
+	public Command.CommandResult cmdAddL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkPrivilege(member)) return Command.CommandResult.ERROR_PERMISSION;
 
 		commandSplit = commandString.split("\\s+", 2);
 
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
+			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
 			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
 			addInternal(songs);
+
+			return new Command.CommandResult(true, "added " + songs.size() + " local songs");
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 
 	}
@@ -218,45 +244,70 @@ public class Main extends Thread {
 		musicPlayer.save();
 	}
 
-	public synchronized void cmdRemove(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		commandSplit = commandString.split("\\s+", 1);
+	public Command.CommandResult cmdRemove(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		commandSplit = commandString.split("\\s+", 2);
 
 		if (commandSplit.length > 1) {
 			String query = commandSplit[1];
-			musicPlayer.removeSongs(s -> s.name.toLowerCase().contains(query));
+			int removed = musicPlayer.removeSongs(s -> {
+				if (s.title.toLowerCase().contains(query)) return true;
+				if (s.artist != null && s.artist.toLowerCase().contains(query)) return true;
+				if (s.album != null && s.album.toLowerCase().contains(query)) return true;
+				return false;
+			});
 			musicPlayerGui.updatePlaylist();
 			musicPlayer.save();
+
+			return new Command.CommandResult(true, "removed " + removed + " songs");
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 	}
 
-	public synchronized void cmdKick(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdKick(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		Song currentSong = musicPlayer.getCurrentSong();
-		musicPlayer.removeSongs(s -> s == currentSong);
-		musicPlayerGui.updatePlaylist();
-		musicPlayer.save();
+
+		if (currentSong != null) {
+			musicPlayer.removeSongs(s -> s == currentSong);
+			musicPlayerGui.updatePlaylist();
+			musicPlayer.save();
+
+			return new Command.CommandResult(true, "removed " + currentSong.getDisplayName());
+		} else {
+			return new Command.CommandResult(false, "nothing is currently played");
+		}
 	}
 
-	public synchronized void cmdQueue(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdQueue(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		commandSplit = commandString.split("\\s+", 1);
 
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
+			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
 			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member.getEffectiveName());
 			queueInternal(songs);
+			return new Command.CommandResult(true, "queued " + songs.size() + " songs");
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 	}
 
-	public synchronized void cmdQueueL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (!checkPrivilege(member)) return;
+	public Command.CommandResult cmdQueueL(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkPrivilege(member)) return Command.CommandResult.ERROR_PERMISSION;
 
 		commandSplit = commandString.split("\\s+", 1);
 
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
+			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
 			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member.getEffectiveName());
 			queueInternal(songs);
+
+			return new Command.CommandResult(true, "queued " + songs.size() + " local songs");
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 	}
 
@@ -268,60 +319,81 @@ public class Main extends Thread {
 		musicPlayer.save();
 	}
 
-	public synchronized void cmdPrevious(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdPrevious(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		musicPlayer.previous();
 		musicPlayerGui.updatePlaylist();
 		musicPlayerGui.updatePlaylistNames();
 
 		musicPlayer.save();
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdNext(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdNext(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		musicPlayer.next();
 		musicPlayerGui.updatePlaylist();
 		musicPlayerGui.updatePlaylistNames();
 
 		musicPlayer.save();
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdPause(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		musicPlayer.pause();
-		musicPlayerGui.update();
-		setActive(false);
-	}
-
-	public synchronized void cmdResume(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		setActive(true);
-		musicPlayer.resume();
-		musicPlayerGui.update();
-	}
-
-	public synchronized void cmdShuffle(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (commandSplit.length > 1) {
-			PlayList currentPlayList = musicPlayer.getCurrentPlaylist();
-
-			if (commandSplit[1].startsWith("on")) {
-				currentPlayList.setShuffled(true);
-			} else if (commandSplit[1].startsWith("off")) {
-				currentPlayList.setShuffled(false);
-			}
-		}
-
-	}
-
-	public void togglePause() {
+	public Command.CommandResult cmdTogglePause(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (musicPlayer.isPaused()) {
 			cmdResume(null, null, null, null);
 		} else {
 			cmdPause(null, null, null, null);
 		}
+
+		return Command.CommandResult.SUCCESS;
 	}
 
-	public synchronized void cmdStop(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		if (!checkOwner(member)) return;
+	public Command.CommandResult cmdPause(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		musicPlayer.pause();
+		musicPlayerGui.update();
+		setActive(false);
+
+		return Command.CommandResult.SUCCESS;
+	}
+
+	public Command.CommandResult cmdResume(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		setActive(true);
+		musicPlayer.resume();
+		musicPlayerGui.update();
+
+		return Command.CommandResult.SUCCESS;
+	}
+
+	public Command.CommandResult cmdShuffle(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (commandSplit.length > 1) {
+			PlayList currentPlayList = musicPlayer.getCurrentPlaylist();
+
+			if (commandSplit[1].equals(PlayList.ORDER_DEFAULT)) {
+				currentPlayList.setOrder(PlayList.ORDER_DEFAULT);
+				return Command.CommandResult.SUCCESS;
+			} else if (commandSplit[1].equals(PlayList.ORDER_SHUFFLE_TRACK)) {
+				currentPlayList.setOrder(PlayList.ORDER_SHUFFLE_TRACK);
+				return Command.CommandResult.SUCCESS;
+			} else if (commandSplit[1].equals(PlayList.ORDER_SHUFFLE_ALBUM)) {
+				currentPlayList.setOrder(PlayList.ORDER_SHUFFLE_TRACK);
+				return Command.CommandResult.SUCCESS;
+			} else {
+				return new Command.CommandResult.UnknownCommandResult(commandString);
+			}
+		} else {
+			return new Command.CommandResult.UnknownCommandResult(commandString);
+		}
+
+	}
+
+	public Command.CommandResult cmdStop(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkOwner(member)) return Command.CommandResult.ERROR_PERMISSION;
 
 		isRunning = false;
 		jda.shutdown();
+
+		return Command.CommandResult.SUCCESS;
 	}
 
 	private void loop(boolean doGuiUpdate) {

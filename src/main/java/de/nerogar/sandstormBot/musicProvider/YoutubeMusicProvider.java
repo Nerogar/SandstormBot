@@ -41,7 +41,7 @@ public class YoutubeMusicProvider implements IMusicProvider {
 				String title = jsonNode.get("title").toString().replaceAll("\"", "");
 				long duration = jsonNode.get("duration").asLong() * 1000;
 
-				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, duration, query, user);
+				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, null, jsonStrings.length > 1 ? query : null, duration, query, user);
 
 				songs.add(song);
 			} catch (IOException e) {

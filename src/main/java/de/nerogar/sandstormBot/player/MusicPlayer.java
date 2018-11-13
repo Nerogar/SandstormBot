@@ -267,16 +267,18 @@ public class MusicPlayer implements INextCache {
 		}
 	}
 
-	public void removeSongs(Predicate<Song> predicate) {
+	public int removeSongs(Predicate<Song> predicate) {
 		boolean removedCurrent = false;
 		if (getCurrentSong() != null && predicate.test(getCurrentSong())) {
 			player.stopTrack();
 			removedCurrent = true;
 		}
 
-		getCurrentPlaylist().remove(predicate);
+		int removed = getCurrentPlaylist().remove(predicate);
 
 		if (removedCurrent) play();
+
+		return removed;
 	}
 
 	public void removeCurrentSong() {

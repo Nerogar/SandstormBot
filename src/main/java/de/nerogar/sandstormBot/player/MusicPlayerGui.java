@@ -4,6 +4,7 @@ import de.nerogar.sandstormBot.Main;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class MusicPlayerGui {
@@ -14,15 +15,20 @@ public class MusicPlayerGui {
 	private Message playlistNamesMessage;
 	private Message playerMessage;
 	private Message playlistMessage;
+	private Message logMessage;
+
+	private List<String> log;
 
 	public MusicPlayerGui(MessageChannel channel, MusicPlayer musicPlayer) {
 		this.channel = channel;
 		this.musicPlayer = musicPlayer;
+		log = new LinkedList<>();
 		create();
 	}
 
 	private void create() {
 		channel.sendMessage("Sandstom Bot connected!").queue();
+		logMessage = channel.sendMessage("```log```").complete();
 		playlistNamesMessage = channel.sendMessage("```playlist names```").complete();
 		playlistMessage = channel.sendMessage("```playlist```").complete();
 		playerMessage = channel.sendMessage("```player```").complete();
@@ -59,7 +65,8 @@ public class MusicPlayerGui {
 			sb.append("⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛");
 		} else {
 			if (musicPlayer.isPaused()) sb.append("❚❚ ");
-			sb.append(currentSong.name);
+			else sb.append("▶ ");
+			sb.append(currentSong.getDisplayName());
 			sb.append('\n');
 
 			//sb.append("Volume: 100%").append('\n');
@@ -107,7 +114,11 @@ public class MusicPlayerGui {
 		sb.append("```");
 		sb.append("====================\n");
 		sb.append(currentPlayList.name);
-		sb.append(" [").append(currentPlayList.getSongs().size()).append(", ").append(formatTime(duration)).append("]");
+		sb.append(" [");
+		sb.append(currentPlayList.getSongs().size()).append(", ");
+		sb.append(formatTime(duration)).append(", ");
+		sb.append("order: ").append(currentPlayList.order);
+		sb.append("]");
 		sb.append('\n');
 		sb.append("====================\n");
 
@@ -117,7 +128,7 @@ public class MusicPlayerGui {
 
 			sb.append("[").append(i).append("] ");
 			sb.append("[").append(formatTime(songs.get(i).duration)).append("] ");
-			sb.append(songs.get(i).name);
+			sb.append(songs.get(i).getDisplayName());
 			//sb.append(" (").append(songs.get(i).user).append(")");
 
 			sb.append('\n');
@@ -131,8 +142,7 @@ public class MusicPlayerGui {
 		StringBuilder sb = new StringBuilder();
 		sb.append("```");
 		sb.append("====================\n");
-		sb.append("Playlists");
-		sb.append('\n');
+		sb.append("Playlists\n");
 		sb.append("====================\n");
 
 		for (PlayList playList : musicPlayer.getPlayLists()) {
@@ -152,6 +162,23 @@ public class MusicPlayerGui {
 
 		sb.append("```");
 		channel.editMessageById(playlistNamesMessage.getId(), sb.toString()).queue();
+	}
+
+	public void sendCommandFeedback(String message) {
+		log.add(message);
+		if (log.size() > 10) {
+			log.remove(0);
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("```");
+
+		for (String s : log) {
+			sb.append(s).append("\n");
+		}
+
+		sb.append("```");
+		channel.editMessageById(logMessage.getId(), sb.toString()).queue();
 	}
 
 }

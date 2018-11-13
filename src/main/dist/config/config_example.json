@@ -13,7 +13,7 @@
 
 	"cacheWholePlaylist": false,
 
-	"localFilePath": "../music",
+	"localFilePath": "../music/",
 	"fileExtensions": [
 		"aac",
 		"flac",

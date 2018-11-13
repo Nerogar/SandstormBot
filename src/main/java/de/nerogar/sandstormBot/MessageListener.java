@@ -46,7 +46,7 @@ public class MessageListener extends ListenerAdapter {
 			//if (voiceState.inVoiceChannel()) {
 			//	GuildVoiceState selfVoiceState = event.getGuild().getSelfMember().getVoiceState();
 			//	if (!selfVoiceState.inVoiceChannel() || voiceState.getChannel() == selfVoiceState.getChannel()) {
-			mainMap.get(event.getGuild()).acceptCommand(channel, event.getMember(), message.split("\\s+"), message);
+			mainMap.get(event.getGuild()).acceptCommand(channel, event.getMember(), message);
 			//	}
 			//}
 		}
@@ -61,16 +61,15 @@ public class MessageListener extends ListenerAdapter {
 	 */
 
 	private void reactionCommand(Guild guild, String command) {
-
 		switch (command) {
 			case "⏯":
-				mainMap.get(guild).togglePause();
+				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "togglepause");
 				break;
 			case "⏭":
-				mainMap.get(guild).cmdNext(null, null, null, null);
+				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "next");
 				break;
 			case "⏮":
-				mainMap.get(guild).cmdPrevious(null, null, null, null);
+				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "previous");
 				break;
 		}
 	}

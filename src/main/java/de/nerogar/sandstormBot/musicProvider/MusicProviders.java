@@ -81,7 +81,7 @@ public class MusicProviders {
 		};
 		String volumeOutput = executeBlocking(detectVolumeCommand, true);
 		if (volumeOutput == null) {
-			System.out.println("Could not read song, skipping: " + input);
+			System.out.println("Could not detect volume for conversion, aborting: " + input);
 			return false;
 		}
 
