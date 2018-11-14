@@ -18,6 +18,7 @@ public class YoutubeMusicProvider implements IMusicProvider {
 	public List<Song> getSongs(String query, String user) {
 		List<Song> songs = new ArrayList<>();
 
+		// youtube-dl --default-search ytsearch1: --format bestaudio --output %(id)s --dump-json input
 		String[] youtubeDLRequest = {
 				"youtube-dl",
 				"--default-search", "ytsearch1:",
@@ -39,9 +40,20 @@ public class YoutubeMusicProvider implements IMusicProvider {
 				String id = jsonNode.get("id").toString().replaceAll("\"", "");
 				String webpage_url = jsonNode.get("webpage_url").toString().replaceAll("\"", "");
 				String title = jsonNode.get("title").toString().replaceAll("\"", "");
+
+				String artist = null;
+				if (jsonNode.has("artist") && !jsonNode.get("artist").isNull()) {
+					artist = jsonNode.get("artist").asText();
+				} else if (jsonNode.has("uploader") && !jsonNode.get("uploader").isNull()) {
+					artist = jsonNode.get("uploader").asText();
+					if (artist.endsWith(" - Topic")) {
+						artist = artist.replace(" - Topic", "");
+					}
+				}
+
 				long duration = jsonNode.get("duration").asLong() * 1000;
 
-				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, null, jsonStrings.length > 1 ? query : null, duration, query, user);
+				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, artist, jsonStrings.length > 1 ? query : null, duration, query, user);
 
 				songs.add(song);
 			} catch (IOException e) {

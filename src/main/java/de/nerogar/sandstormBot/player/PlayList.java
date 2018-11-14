@@ -37,6 +37,7 @@ public class PlayList {
 	public PlayList(String name) {
 		currentId = -1;
 		order = ORDER_DEFAULT;
+		seed = new Random().nextInt();
 
 		this.name = name;
 
