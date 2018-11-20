@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.player.Song;
+import net.dv8tion.jda.core.entities.Member;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
@@ -50,13 +51,15 @@ public class LocalMusicProvider implements IMusicProvider {
 						localFiles.add(s);
 					});
 
+			localFiles.sort(String::compareTo);
+
 		} catch (IOException | IndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public List<Song> getSongs(String query, String user) {
+	public List<Song> getSongs(String query, Member member) {
 
 		query = query.toLowerCase();
 
@@ -123,7 +126,7 @@ public class LocalMusicProvider implements IMusicProvider {
 				}
 
 				String id = DigestUtils.sha256Hex(songLocation);
-				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, query, user);
+				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, query, member.getEffectiveName());
 
 				songs.add(song);
 

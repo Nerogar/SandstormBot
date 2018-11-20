@@ -4,8 +4,7 @@ import de.nerogar.sandstormBot.Main;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class MusicPlayerGui {
 
@@ -17,17 +16,20 @@ public class MusicPlayerGui {
 	private Message playlistMessage;
 	private Message logMessage;
 
+	private final Set<Message> outputMessages;
+
 	private List<String> log;
 
 	public MusicPlayerGui(MessageChannel channel, MusicPlayer musicPlayer) {
 		this.channel = channel;
 		this.musicPlayer = musicPlayer;
 		log = new LinkedList<>();
+		outputMessages = Collections.synchronizedSet(new HashSet<>());
 		create();
 	}
 
 	private void create() {
-		channel.sendMessage("Sandstom Bot connected!").queue();
+		channel.sendMessage("Sandstorm Bot connected!").queue();
 		logMessage = channel.sendMessage("```log```").complete();
 		playlistNamesMessage = channel.sendMessage("```playlist names```").complete();
 		playlistMessage = channel.sendMessage("```playlist```").complete();
@@ -179,6 +181,26 @@ public class MusicPlayerGui {
 
 		sb.append("```");
 		channel.editMessageById(logMessage.getId(), sb.toString()).queue();
+	}
+
+	public void sendCommandOutput(String messageString) {
+		String messageBlock = "```" + messageString + "```";
+
+		channel.sendMessage(messageBlock).queue(m -> {
+			synchronized (outputMessages) {
+				outputMessages.add(m);
+				channel.addReactionById(m.getId(), "❌").queue();
+			}
+		});
+	}
+
+	public void handleRemoveOutput(String messageId) {
+		synchronized (outputMessages) {
+			boolean removed = outputMessages.removeIf(m -> m.getId().equals(messageId));
+			if (removed) {
+				channel.deleteMessageById(messageId).queue();
+			}
+		}
 	}
 
 }

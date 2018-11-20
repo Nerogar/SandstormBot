@@ -2,14 +2,20 @@
 	"loginToken": "",
 
 	"ownerId": "",
-	"permissionRoleId": "",
-	"channelId": "",
+	"permissionRoleId": [
+		""
+	],
+	"channelId": [
+		""
+	],
 
-	"commandPrefix" : "!",
+	"commandPrefix": "!",
 
 	"playerGuiUpdateInterval": 15,
 	"playlistGuiEntries": 12,
 	"playlistGuiPadding": 1,
+
+	"maxYoutubeSongLength ": 900000,
 
 	"cacheWholePlaylist": false,
 

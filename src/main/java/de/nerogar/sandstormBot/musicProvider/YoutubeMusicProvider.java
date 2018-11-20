@@ -3,7 +3,9 @@ package de.nerogar.sandstormBot.musicProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.PlayerMain;
 import de.nerogar.sandstormBot.player.Song;
+import net.dv8tion.jda.core.entities.Member;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,16 +17,17 @@ import java.util.List;
 public class YoutubeMusicProvider implements IMusicProvider {
 
 	@Override
-	public List<Song> getSongs(String query, String user) {
+	public List<Song> getSongs(String query, Member member) {
 		List<Song> songs = new ArrayList<>();
 
-		// youtube-dl --default-search ytsearch1: --format bestaudio --output %(id)s --dump-json input
+		// youtube-dl --default-search ytsearch1: --format bestaudio --output %(id)s --dump-json -- input
 		String[] youtubeDLRequest = {
 				"youtube-dl",
 				"--default-search", "ytsearch1:",
 				"--format", "bestaudio",
 				"--output", "%(id)s",
 				"--dump-json",
+				"--",
 				query
 		};
 		String youtubeResponse = MusicProviders.executeBlocking(youtubeDLRequest, true);
@@ -53,12 +56,16 @@ public class YoutubeMusicProvider implements IMusicProvider {
 
 				long duration = jsonNode.get("duration").asLong() * 1000;
 
-				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, artist, jsonStrings.length > 1 ? query : null, duration, query, user);
+				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, artist, jsonStrings.length > 1 ? query : null, duration, query, member.getEffectiveName());
 
 				songs.add(song);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+
+		if (!PlayerMain.checkPrivilege(member)) {
+			songs.removeIf(s -> s.duration > Main.SETTINGS.maxYoutubeSongLength);
 		}
 
 		return songs;

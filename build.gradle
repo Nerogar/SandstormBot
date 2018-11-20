@@ -18,9 +18,17 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
+    // jda (discord api)
     compile 'net.dv8tion:JDA:3.8.1_437'
+
+    // lava player (music player for discord)
     compile 'com.sedmelluq:lavaplayer:1.3.10'
+
+    // jackson
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.7'
+
+    // spotify
+    compile 'se.michaelthelin.spotify:spotify-web-api-java:2.1.1'
 }
 
 task createRun(type: Copy) {

@@ -16,7 +16,7 @@ public class MessageListener extends ListenerAdapter {
 
 	private JDA jda;
 
-	private Map<Guild, Main> mainMap;
+	private Map<Guild, PlayerMain> mainMap;
 
 	public MessageListener() {
 		mainMap = new HashMap<>();
@@ -26,15 +26,15 @@ public class MessageListener extends ListenerAdapter {
 		this.jda = jda;
 	}
 
-	public void setMain(Guild guild, Main main) {
-		mainMap.put(guild, main);
+	public void setMain(Guild guild, PlayerMain playerMain) {
+		mainMap.put(guild, playerMain);
 	}
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getMessage().isWebhookMessage()) return;
 		MessageChannel channel = event.getChannel();
-		if (!event.getChannel().getId().equals(Main.SETTINGS.channelId)) return;
+		if (!Main.SETTINGS.channelId.contains(event.getChannel().getId())) return;
 
 		String message = event.getMessage().getContentRaw();
 
@@ -60,7 +60,7 @@ public class MessageListener extends ListenerAdapter {
 	next: ⏭ ⏮
 	 */
 
-	private void reactionCommand(Guild guild, String command) {
+	private void reactionCommand(Guild guild, String messageId, String command) {
 		switch (command) {
 			case "⏯":
 				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "togglepause");
@@ -71,21 +71,24 @@ public class MessageListener extends ListenerAdapter {
 			case "⏮":
 				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "previous");
 				break;
+			case "❌":
+				mainMap.get(guild).getMusicPlayerGui().handleRemoveOutput(messageId);
+				break;
 		}
 	}
 
 	@Override
 	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
 		if (jda.getSelfUser().getId().equals(event.getMember().getUser().getId())) return;
-		if (!event.getChannel().getId().equals(Main.SETTINGS.channelId)) return;
-		reactionCommand(event.getGuild(), event.getReactionEmote().getName());
+		if (!Main.SETTINGS.channelId.contains(event.getChannel().getId())) return;
+		reactionCommand(event.getGuild(), event.getMessageId(), event.getReactionEmote().getName());
 	}
 
 	@Override
 	public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
 		if (jda.getSelfUser().getId().equals(event.getMember().getUser().getId())) return;
-		if (!event.getChannel().getId().equals(Main.SETTINGS.channelId)) return;
-		reactionCommand(event.getGuild(), event.getReactionEmote().getName());
+		if (!Main.SETTINGS.channelId.contains(event.getChannel().getId())) return;
+		reactionCommand(event.getGuild(), event.getMessageId(), event.getReactionEmote().getName());
 	}
 
 	@Override

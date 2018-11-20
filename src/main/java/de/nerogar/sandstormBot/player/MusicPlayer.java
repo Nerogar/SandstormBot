@@ -11,6 +11,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import de.nerogar.sandstormBot.AudioPlayerSendHandler;
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.PlayerMain;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 
@@ -22,10 +23,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MusicPlayer implements INextCache {
 
-	private Main main;
+	private PlayerMain playerMain;
 
 	// player classes
 	private AudioManager       audioManager;
@@ -39,8 +41,8 @@ public class MusicPlayer implements INextCache {
 
 	private boolean waitingForCache;
 
-	public MusicPlayer(Main main, AudioManager audioManager) {
-		this.main = main;
+	public MusicPlayer(PlayerMain playerMain, AudioManager audioManager) {
+		this.playerMain = playerMain;
 		this.audioManager = audioManager;
 		this.playLists = new ArrayList<>();
 		playQueue = new PlayQueue();
@@ -51,7 +53,8 @@ public class MusicPlayer implements INextCache {
 		AudioSourceManagers.registerLocalSource(playerManager);
 
 		player = playerManager.createPlayer();
-		player.addListener(new SongEvents(main, this));
+		player.addListener(new SongEvents(playerMain, this));
+		audioManager.setSendingHandler(new AudioPlayerSendHandler(player));
 
 		play();
 	}
@@ -59,8 +62,8 @@ public class MusicPlayer implements INextCache {
 	private void load() {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode playlistsFile = objectMapper.readTree(new File("playlists.json"));
-			JsonNode queueFile = objectMapper.readTree(new File("queue.json"));
+			JsonNode playlistsFile = objectMapper.readTree(new File(playerMain.getGuild().getId(), "playlists.json"));
+			JsonNode queueFile = objectMapper.readTree(new File(playerMain.getGuild().getId(), "queue.json"));
 
 			playLists = new ArrayList<>();
 			for (JsonNode playlistNode : playlistsFile) {
@@ -82,24 +85,27 @@ public class MusicPlayer implements INextCache {
 
 	public synchronized void save() {
 		try {
-			if (new File("playlists.json.new").exists() || new File("playlists.json.new").exists()) {
+			if (new File(playerMain.getGuild().getId(), "playlists.json.new").exists()
+					|| new File(playerMain.getGuild().getId(), "playlists.json.new").exists()) {
 				System.out.println("ERROR: Old playlist saves detected.\n"
 						                   + "Rename *.json.new to *.json and restart to recover them or delete all *.json.new files to start with empty playlists!");
 				System.exit(1);
 			}
 
+			new File(playerMain.getGuild().getId()).mkdirs();
+
 			ObjectMapper objectMapper = new ObjectMapper();
 			ObjectWriter objectWriter = objectMapper.writer(new DefaultPrettyPrinter());
-			objectWriter.writeValue(new File("playlists.json.new"), playLists);
-			objectWriter.writeValue(new File("queue.json.new"), playQueue);
+			objectWriter.writeValue(new File(playerMain.getGuild().getId(), "playlists.json.new"), playLists);
+			objectWriter.writeValue(new File(playerMain.getGuild().getId(), "queue.json.new"), playQueue);
 
 			// delete old files
-			if (Files.exists(Paths.get("playlists.json"))) Files.delete(Paths.get("playlists.json"));
-			if (Files.exists(Paths.get("queue.json"))) Files.delete(Paths.get("queue.json"));
+			if (Files.exists(Paths.get(playerMain.getGuild().getId(), "playlists.json"))) Files.delete(Paths.get(playerMain.getGuild().getId(), "playlists.json"));
+			if (Files.exists(Paths.get(playerMain.getGuild().getId(), "queue.json"))) Files.delete(Paths.get(playerMain.getGuild().getId(), "queue.json"));
 
 			// move new files
-			Files.move(Paths.get("playlists.json.new"), Paths.get("playlists.json"), StandardCopyOption.ATOMIC_MOVE);
-			Files.move(Paths.get("queue.json.new"), Paths.get("queue.json"), StandardCopyOption.ATOMIC_MOVE);
+			Files.move(Paths.get(playerMain.getGuild().getId(), "playlists.json.new"), Paths.get(playerMain.getGuild().getId(), "playlists.json"), StandardCopyOption.ATOMIC_MOVE);
+			Files.move(Paths.get(playerMain.getGuild().getId(), "queue.json.new"), Paths.get(playerMain.getGuild().getId(), "queue.json"), StandardCopyOption.ATOMIC_MOVE);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -108,7 +114,6 @@ public class MusicPlayer implements INextCache {
 
 	public void joinChannel(VoiceChannel voiceChannel) {
 		audioManager.openAudioConnection(voiceChannel);
-		audioManager.setSendingHandler(new AudioPlayerSendHandler(player));
 	}
 
 	public void disconnect() {
@@ -194,11 +199,11 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public void pause() {
-		player.setPaused(true);
+		if (!isPaused()) player.setPaused(true);
 	}
 
 	public void resume() {
-		player.setPaused(false);
+		if (isPaused()) player.setPaused(false);
 	}
 
 	public boolean isPaused() {
@@ -222,6 +227,8 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public void switchPlaylist(String name) {
+		name = name.toLowerCase();
+
 		player.stopTrack();
 
 		PlayList nextPlaylist = null;
@@ -239,6 +246,23 @@ public class MusicPlayer implements INextCache {
 				player.stopTrack();
 				play();
 			}
+		}
+
+	}
+
+	public void removePlaylist(String name) {
+		name = name.toLowerCase();
+
+		PlayList removedPlaylist = null;
+		for (PlayList playList : playLists) {
+			if (playList.name.toLowerCase().contains(name)) {
+				removedPlaylist = playList;
+				break;
+			}
+		}
+
+		if (currentPlaylist != removedPlaylist) {
+			playLists.remove(removedPlaylist);
 		}
 
 	}
@@ -265,6 +289,10 @@ public class MusicPlayer implements INextCache {
 		if (wasEmpty) {
 			play();
 		}
+	}
+
+	public List<Song> searchSongs(Predicate<Song> predicate) {
+		return getCurrentPlaylist().songs.stream().filter(predicate).collect(Collectors.toList());
 	}
 
 	public int removeSongs(Predicate<Song> predicate) {

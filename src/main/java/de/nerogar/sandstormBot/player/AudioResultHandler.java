@@ -22,6 +22,8 @@ public class AudioResultHandler implements AudioLoadResultHandler {
 	public void trackLoaded(AudioTrack track) {
 		if (musicPlayer.getCurrentSong() == song) {
 			player.playTrack(track);
+		} else {
+			System.out.println("wrong track finished loading: " + song.getDisplayName() + ", expected: " + musicPlayer.getCurrentSong().getDisplayName());
 		}
 	}
 

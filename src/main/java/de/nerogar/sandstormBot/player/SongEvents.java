@@ -5,14 +5,15 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.PlayerMain;
 
 public class SongEvents extends AudioEventAdapter {
 
-	private Main        main;
+	private PlayerMain  playerMain;
 	private MusicPlayer musicPlayer;
 
-	public SongEvents(Main main, MusicPlayer musicPlayer) {
-		this.main = main;
+	public SongEvents(PlayerMain playerMain, MusicPlayer musicPlayer) {
+		this.playerMain = playerMain;
 		this.musicPlayer = musicPlayer;
 	}
 
@@ -27,7 +28,7 @@ public class SongEvents extends AudioEventAdapter {
 	@Override
 	public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
 		if (endReason.mayStartNext) {
-			main.cmdNext(null, null, null, null);
+			playerMain.acceptCommand(null, null, Main.SETTINGS.commandPrefix + "next");
 		}
 	}
 
