@@ -76,6 +76,9 @@ public class MusicPlayerGui {
 			sb.append(currentSong.request).append(" (").append(currentSong.user).append(")");
 			sb.append('\n');
 
+			sb.append(currentSong.location);
+			sb.append('\n');
+
 			long position = musicPlayer.getCurrentPosition();
 			long duration = musicPlayer.getCurrentSong().duration;
 			int progress = (int) Math.round(((double) position / duration) * 26);

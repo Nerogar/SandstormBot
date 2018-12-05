@@ -20,6 +20,9 @@ public class Song {
 	public String request;
 	public String user;
 
+	public int  playCount;
+	public long lastPlayed;
+
 	private boolean cached;
 
 	public Song(JsonNode jsonNode) {
@@ -32,6 +35,10 @@ public class Song {
 		duration = jsonNode.get("duration").asLong();
 		request = jsonNode.get("request").asText();
 		user = jsonNode.get("user").asText();
+
+		title = jsonNode.has("title") ? (jsonNode.get("title").isNull() ? null : jsonNode.get("title").asText()) : null;
+		playCount = jsonNode.has("playCount") ? jsonNode.get("playCount").asInt() : 0;
+		lastPlayed = jsonNode.has("lastPlayed") ? jsonNode.get("lastPlayed").asLong() : 0;
 	}
 
 	public Song(String id, String providerName, String location, String title, String artist, String album, long duration, String request, String user) {

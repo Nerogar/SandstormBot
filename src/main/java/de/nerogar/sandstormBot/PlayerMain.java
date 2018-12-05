@@ -1,6 +1,7 @@
 package de.nerogar.sandstormBot;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.nerogar.sandstormBot.musicMetaProvider.MusicMetaProviders;
 import de.nerogar.sandstormBot.musicProvider.LocalMusicProvider;
 import de.nerogar.sandstormBot.musicProvider.MusicProvider;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
@@ -163,11 +164,10 @@ public class PlayerMain extends Thread {
 	public Command.CommandResult cmdScanLocal(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (!checkOwner(member)) return Command.CommandResult.ERROR_PERMISSION;
 
-		LocalMusicProvider localMusicProvider = (LocalMusicProvider) MusicProviders.getProvider(MusicProviders.LOCAL);
-		localMusicProvider.scan(Main.SETTINGS.localFilePath);
+		MusicMetaProviders.localMusicMetaProvider.scan(Main.SETTINGS.localFilePath);
 
 		// save that stuff somehow
-		int size = localMusicProvider.getLocalFiles().size();
+		int size = MusicMetaProviders.localMusicMetaProvider.getLocalFiles().size();
 		return new Command.CommandResult(true, "scanned " + size + " files!");
 	}
 
@@ -234,7 +234,7 @@ public class PlayerMain extends Thread {
 			String queryString = commandSplit[1];
 
 			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member);
+			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(queryString, member);
 			addInternal(songs);
 			return new Command.CommandResult(true, "added " + songs.size() + " songs");
 		} else {
@@ -252,7 +252,7 @@ public class PlayerMain extends Thread {
 			String queryString = commandSplit[1];
 
 			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member);
+			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(queryString, member);
 			addInternal(songs);
 
 			return new Command.CommandResult(true, "added " + songs.size() + " local songs");
@@ -325,7 +325,7 @@ public class PlayerMain extends Thread {
 			String queryString = commandSplit[1];
 
 			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicProviders.getProvider(MusicProviders.YOUTUBE_DL).getSongs(queryString, member);
+			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(queryString, member);
 			queueInternal(songs);
 			return new Command.CommandResult(true, "queued " + songs.size() + " songs");
 		} else {
@@ -342,7 +342,7 @@ public class PlayerMain extends Thread {
 			String queryString = commandSplit[1];
 
 			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicProviders.getProvider(MusicProviders.LOCAL).getSongs(queryString, member);
+			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(queryString, member);
 			queueInternal(songs);
 
 			return new Command.CommandResult(true, "queued " + songs.size() + " local songs");
