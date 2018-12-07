@@ -1,5 +1,6 @@
 package de.nerogar.sandstormBot;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import net.dv8tion.jda.core.JDA;
@@ -21,15 +22,23 @@ public class Main {
 
 	public static PlayerSettings SETTINGS;
 
-	public static void main(String[] args) throws LoginException, InterruptedException {
-		ObjectMapper objectMapper = new ObjectMapper();
+	public static boolean loadConfig() {
 		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
 			SETTINGS = objectMapper.readValue(new File("config/config.json"), PlayerSettings.class);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Could not load settings!");
-			return;
+			return false;
 		}
+
+		return true;
+	}
+
+	public static void main(String[] args) throws LoginException, InterruptedException {
+		if (!loadConfig()) return;
+
 		new File(DOWNLOAD_FOLDER).mkdirs();
 		new File(MUSIC_CONVERT_DIRECTORY).mkdirs();
 

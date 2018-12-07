@@ -1,12 +1,13 @@
 package de.nerogar.sandstormBot.player;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import de.nerogar.sandstormBot.Command;
+import de.nerogar.sandstormBot.IPlaylistPlugin;
+import de.nerogar.sandstormBot.PlaylistPlugins;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class PlayList {
@@ -21,8 +22,13 @@ public class PlayList {
 	public int        seed;
 	public int        currentId;
 
-	private int[] nextArray;
-	private int[] previousArray;
+	private int[]                nextArray;
+	private int[]                previousArray;
+	private Map<String, Command> commandMap;
+
+	@JsonProperty
+	private String          playlistPluginName;
+	private IPlaylistPlugin playlistPlugin;
 
 	public PlayList(JsonNode jsonNode) {
 		this(jsonNode.get("name").asText());
@@ -32,6 +38,9 @@ public class PlayList {
 			add(new Song(songNode));
 		}
 		currentId = jsonNode.get("currentId").asInt();
+
+		playlistPluginName = jsonNode.has("playlistPluginName") ? (jsonNode.get("playlistPluginName").isNull() ? null : jsonNode.get("playlistPluginName").asText()) : null;
+		setPlaylistPlugin(playlistPluginName);
 	}
 
 	public PlayList(String name) {
@@ -70,6 +79,33 @@ public class PlayList {
 			previousArray[indexArray[i]] = indexArray[((i - 1) + indexArray.length) % indexArray.length];
 		}
 
+	}
+
+	public void setPlaylistPlugin(String playlistPluginName) {
+		if (playlistPluginName != null) {
+			IPlaylistPlugin playlistPlugin = PlaylistPlugins.get(playlistPluginName);
+			playlistPlugin.init(this);
+
+			this.playlistPluginName = playlistPlugin.getName();
+			this.playlistPlugin = playlistPlugin;
+			this.commandMap = playlistPlugin.addCommands();
+		} else {
+			this.playlistPluginName = null;
+			this.playlistPlugin = null;
+			this.commandMap = null;
+		}
+	}
+
+	public IPlaylistPlugin getPlaylistPlugin() {
+		return playlistPlugin;
+	}
+
+	public Command getCommand(String name) {
+		if (commandMap == null) {
+			return null;
+		} else {
+			return commandMap.get(name);
+		}
 	}
 
 	public void add(Song song) {

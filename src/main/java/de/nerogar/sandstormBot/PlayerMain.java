@@ -1,16 +1,11 @@
 package de.nerogar.sandstormBot;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.musicMetaProvider.MusicMetaProviders;
-import de.nerogar.sandstormBot.musicProvider.LocalMusicProvider;
 import de.nerogar.sandstormBot.musicProvider.MusicProvider;
-import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.*;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +130,10 @@ public class PlayerMain extends Thread {
 
 		Command command = commands.get(commandSplit[0]);
 
+		if (command == null) {
+			command = musicPlayer.getCurrentPlaylist().getCommand(commandSplit[0]);
+		}
+
 		if (command != null) {
 			Command.CommandResult result = command.execute(channel, member, commandSplit, commandString);
 
@@ -150,15 +149,13 @@ public class PlayerMain extends Thread {
 	public Command.CommandResult cmdConfig(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (!checkOwner(member)) return Command.CommandResult.ERROR_PERMISSION;
 
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			Main.SETTINGS = objectMapper.readValue(new File("config/config.json"), PlayerSettings.class);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Could not load settings!");
-		}
+		boolean success = Main.loadConfig();
 
-		return Command.CommandResult.SUCCESS;
+		if (success) {
+			return Command.CommandResult.SUCCESS;
+		} else {
+			return new Command.CommandResult(false, "could not load config");
+		}
 	}
 
 	public Command.CommandResult cmdScanLocal(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
