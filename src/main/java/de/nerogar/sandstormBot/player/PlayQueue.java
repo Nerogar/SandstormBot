@@ -19,12 +19,13 @@ public class PlayQueue extends PlayList {
 		// previous is not allowed
 	}
 
-	public void next() {
+	@Override
+	public void next(SongPredicate songPredicate) {
 		Song currentSong = getCurrentSong();
 		remove(s -> s == currentSong);
 
 		if (getCurrentSong() == null && size() > 0) {
-			super.next();
+			super.next(new SongIndexPredicate(0));
 		}
 	}
 

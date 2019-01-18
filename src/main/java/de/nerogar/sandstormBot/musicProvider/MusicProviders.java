@@ -14,7 +14,7 @@ public class MusicProviders {
 
 	public static final  String LOCAL      = "local";
 	public static final  String YOUTUBE_DL = "yt-dl";
-	private static final String NULL_FILE  = System.getProperty("os.name").contains("win") ? "NUL" : "/dev/nul";
+	private static final String NULL_FILE  = System.getProperty("os.name").contains("win") ? "NUL" : "/dev/null";
 
 	private static IMusicProvider youtubeProvider;
 	private static IMusicProvider localProvider;
@@ -34,14 +34,40 @@ public class MusicProviders {
 		}
 	}
 
-	public static String executeBlocking(String[] command, boolean nullOnFail) {
+	public static String executeBlocking(String[] command, boolean nullOnFail, boolean mergeErrorStream) {
 
 		try {
 			String workingDirectory = System.getProperty("user.dir");
 
-			ProcessBuilder processBuilder = new ProcessBuilder(command).redirectErrorStream(true).directory(new File(workingDirectory));
+			ProcessBuilder processBuilder = new ProcessBuilder(command).directory(new File(workingDirectory));
+			if (mergeErrorStream) processBuilder.redirectErrorStream(true);
 
 			Process process = processBuilder.start();
+
+			if (!mergeErrorStream) {
+				new Thread(() -> {
+					BufferedReader processOutput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
+					if (!Main.SETTINGS.debug) {
+						try {
+							while ((processOutput.readLine()) != null) ;
+						} catch (IOException e) { }
+					} else {
+						StringBuilder sb = new StringBuilder();
+						String line;
+						try {
+							while ((line = processOutput.readLine()) != null) {
+								sb.append(line).append("\n");
+							}
+						} catch (IOException e) {
+						}
+
+						if (sb.length() > 0) {
+							System.out.println(sb);
+						}
+					}
+				}).start();
+			}
 
 			BufferedReader processOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			StringBuilder sb = new StringBuilder();
@@ -52,11 +78,8 @@ public class MusicProviders {
 
 			int exitCode = process.waitFor();
 
-			if (exitCode != 0) {
-				System.out.println(sb.toString());
-			}
-
 			if (exitCode != 0 && nullOnFail) {
+				System.out.println(sb.toString());
 				return null;
 			} else {
 				return sb.toString();
@@ -79,7 +102,7 @@ public class MusicProviders {
 				"-f", "null",
 				NULL_FILE
 		};
-		String volumeOutput = executeBlocking(detectVolumeCommand, true);
+		String volumeOutput = executeBlocking(detectVolumeCommand, true, true);
 		if (volumeOutput == null) {
 			System.out.println("Could not detect volume for conversion, aborting: " + input);
 			return false;
@@ -110,7 +133,7 @@ public class MusicProviders {
 				"-y",
 				Main.MUSIC_CONVERT_DIRECTORY + id + ".opus"
 		};
-		String convertOutput = executeBlocking(convertCommand, false);
+		String convertOutput = executeBlocking(convertCommand, false, false);
 
 		if (convertOutput == null) {
 			System.out.println("Could not convert song, skipping: " + input);

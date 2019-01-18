@@ -89,4 +89,13 @@ public class Song {
 				'}';
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		if (!(obj instanceof Song)) return false;
+
+		Song other = (Song) obj;
+
+		return id.equals(other.id);
+	}
 }

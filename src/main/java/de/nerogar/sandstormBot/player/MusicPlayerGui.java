@@ -38,6 +38,7 @@ public class MusicPlayerGui {
 		playerMessage.addReaction("⏯").queue();
 		playerMessage.addReaction("⏮").queue();
 		playerMessage.addReaction("⏭").queue();
+		playerMessage.addReaction("🔀").queue();
 
 	}
 
@@ -133,6 +134,7 @@ public class MusicPlayerGui {
 
 			sb.append("[").append(i).append("] ");
 			sb.append("[").append(formatTime(songs.get(i).duration)).append("] ");
+			if (Main.SETTINGS.debug) sb.append("[").append(songs.get(i).isCached() ? 'c' : ' ').append("] ");
 			sb.append(songs.get(i).getDisplayName());
 			//sb.append(" (").append(songs.get(i).user).append(")");
 

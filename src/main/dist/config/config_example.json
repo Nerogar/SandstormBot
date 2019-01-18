@@ -1,4 +1,6 @@
 {
+	"debug": false,
+
 	"loginToken": "",
 
 	"ownerId": "",
@@ -20,7 +22,10 @@
 	"playlistGuiEntries": 12,
 	"playlistGuiPadding": 1,
 
-	"maxYoutubeSongLength ": 900000,
+	"maxYoutubeSongLength": 900000,
+
+	// amount of songs to be cached ahead of time
+	"songCacheLimit": 1,
 
 	"cacheWholePlaylist": false,
 
@@ -39,6 +44,13 @@
 		"mp4",
 		"mp3",
 		"mpeg"
-	]
+	],
+
+	// To generate an api key:
+	// 1. visit reddit.com/prefs/apps
+	// 2. create a new app
+	// 3. fill out the required fields, select the script app type
+	"redditClientId": null,
+	"redditClientSecret": null
 
 }

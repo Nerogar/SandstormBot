@@ -26,9 +26,8 @@ public class PlayList {
 	private int[]                previousArray;
 	private Map<String, Command> commandMap;
 
-	@JsonProperty
-	private String          playlistPluginName;
-	private IPlaylistPlugin playlistPlugin;
+	@JsonProperty private String          playlistPluginName;
+	@JsonIgnore private   IPlaylistPlugin playlistPlugin;
 
 	public PlayList(JsonNode jsonNode) {
 		this(jsonNode.get("name").asText());
@@ -61,14 +60,9 @@ public class PlayList {
 		}
 
 		if (order.equals(ORDER_SHUFFLE_TRACK)) {
-			Random random = new Random();
-
-			for (int i = 0; i < indexArray.length; i++) {
-				int index = random.nextInt(indexArray.length);
-				int temp = indexArray[i];
-				indexArray[i] = indexArray[index];
-				indexArray[index] = temp;
-			}
+			shuffleTrack(indexArray);
+		} else if (order.equals(ORDER_SHUFFLE_ALBUM)) {
+			shuffleAlbum(indexArray);
 		}
 
 		nextArray = new int[indexArray.length];
@@ -79,6 +73,46 @@ public class PlayList {
 			previousArray[indexArray[i]] = indexArray[((i - 1) + indexArray.length) % indexArray.length];
 		}
 
+	}
+
+	private void shuffleTrack(int[] indexArray) {
+		Random random = new Random();
+
+		for (int i = 0; i < indexArray.length; i++) {
+			int index = random.nextInt(indexArray.length);
+			int temp = indexArray[i];
+			indexArray[i] = indexArray[index];
+			indexArray[index] = temp;
+		}
+	}
+
+	private void shuffleAlbum(int[] indexArray) {
+		Set<String> albumNames = new HashSet<>();
+		Map<String, List<Integer>> albumMap = new HashMap<>();
+
+		for (int i = 0; i < songs.size(); i++) {
+			albumNames.add(songs.get(i).album);
+			albumMap.computeIfAbsent(songs.get(i).album, s -> new ArrayList<>()).add(i);
+		}
+
+		String[] shuffledAlbumNames = albumNames.toArray(new String[albumNames.size()]);
+
+		Random random = new Random();
+		for (int i = 0; i < shuffledAlbumNames.length; i++) {
+			int index = random.nextInt(shuffledAlbumNames.length);
+			String temp = shuffledAlbumNames[i];
+			shuffledAlbumNames[i] = shuffledAlbumNames[index];
+			shuffledAlbumNames[index] = temp;
+		}
+
+		int i = 0;
+		for (String shuffledAlbumName : shuffledAlbumNames) {
+			List<Integer> album = albumMap.get(shuffledAlbumName);
+			for (Integer index : album) {
+				indexArray[i] = index;
+				i++;
+			}
+		}
 	}
 
 	public void setPlaylistPlugin(String playlistPluginName) {
@@ -96,6 +130,7 @@ public class PlayList {
 		}
 	}
 
+	@JsonIgnore
 	public IPlaylistPlugin getPlaylistPlugin() {
 		return playlistPlugin;
 	}
@@ -135,7 +170,7 @@ public class PlayList {
 			}
 		}
 
-		if (songs.isEmpty()) {
+		if (currentId >= songs.size()) {
 			currentId = -1;
 		}
 
@@ -168,7 +203,7 @@ public class PlayList {
 	}
 
 	@JsonIgnore
-	public Song getNextPlaying() {
+	public Song getNextPlaying(int offset) {
 		if (currentId < 0) {
 			if (songs.size() > 0) {
 				return songs.get(0);
@@ -177,16 +212,24 @@ public class PlayList {
 			}
 		}
 
-		return songs.get(nextArray[currentId]);
+		int i = currentId;
+		for (int j = 0; j < offset; j++) {
+			i = nextArray[i];
+		}
+		return songs.get(i);
 	}
 
-	public void next() {
-		if (currentId < 0 && songs.size() > 0) {
-			currentId = 0;
-		} else if (currentId >= 0) {
-			currentId = nextArray[currentId];
-		}
+	public void next(SongPredicate songPredicate) {
+		int oldId = currentId;
+		int invocation = 0;
 
+		do {
+			if (currentId < 0 && songs.size() > 0) {
+				currentId = 0;
+			} else if (currentId >= 0) {
+				currentId = nextArray[currentId];
+			}
+		} while (!songPredicate.test(getCurrentSong(), currentId, invocation++) && currentId != oldId);
 	}
 
 	public void previous() {

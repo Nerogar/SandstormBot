@@ -1,8 +1,6 @@
 package de.nerogar.sandstormBot.player;
 
-import java.util.function.Predicate;
-
-public class SongSearchPredicate implements Predicate<Song> {
+public class SongSearchPredicate implements SongPredicate {
 
 	private String query;
 
@@ -11,7 +9,7 @@ public class SongSearchPredicate implements Predicate<Song> {
 	}
 
 	@Override
-	public boolean test(Song song) {
+	public boolean test(Song song, int index, int invocation) {
 		if (song.getDisplayName().toLowerCase().contains(query)) return true;
 		if (song.title.toLowerCase().contains(query)) return true;
 		if (song.artist != null && song.artist.toLowerCase().contains(query)) return true;
@@ -19,4 +17,5 @@ public class SongSearchPredicate implements Predicate<Song> {
 		if (song.request != null && song.request.toLowerCase().contains(query)) return true;
 		return false;
 	}
+
 }

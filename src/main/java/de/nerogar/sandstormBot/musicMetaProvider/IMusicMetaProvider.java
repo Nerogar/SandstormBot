@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface IMusicMetaProvider {
 
-	int getPredictedSongCount(String query);
+	List<String> getPredictedSongLocations(String query, Member member);
 
-	List<Song> getSongs(String query, Member member);
+	List<Song> getSongs(List<String> songLocations, String query, Member member);
 
 }

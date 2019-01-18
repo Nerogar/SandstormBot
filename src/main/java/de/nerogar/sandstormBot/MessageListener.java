@@ -1,9 +1,11 @@
 package de.nerogar.sandstormBot;
 
+import net.dv8tion.jda.client.events.call.voice.CallVoiceJoinEvent;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.ShutdownEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -71,6 +73,9 @@ public class MessageListener extends ListenerAdapter {
 			case "⏮":
 				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "previous");
 				break;
+			case "🔀":
+				mainMap.get(guild).acceptCommand(null, null, Main.SETTINGS.commandPrefix + "random");
+				break;
 			case "❌":
 				mainMap.get(guild).getMusicPlayerGui().handleRemoveOutput(messageId);
 				break;
@@ -94,6 +99,16 @@ public class MessageListener extends ListenerAdapter {
 	@Override
 	public void onShutdown(ShutdownEvent event) {
 		System.exit(0);
+	}
+
+	@Override
+	public void onCallVoiceJoin(CallVoiceJoinEvent event) {
+		//System.out.println("onCallVoiceJoin " + event);
+	}
+
+	@Override
+	public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+		//System.out.println("onGuildVoiceJoin " + event);
 	}
 
 }

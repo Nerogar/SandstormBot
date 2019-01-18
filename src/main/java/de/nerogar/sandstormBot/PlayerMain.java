@@ -6,9 +6,7 @@ import de.nerogar.sandstormBot.player.*;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PlayerMain extends Thread {
 
@@ -93,14 +91,16 @@ public class PlayerMain extends Thread {
 		commands.put(Main.SETTINGS.commandPrefix + "search", this::cmdSearch);
 		commands.put(Main.SETTINGS.commandPrefix + "remove", this::cmdRemove);
 		commands.put(Main.SETTINGS.commandPrefix + "kick", this::cmdKick);
+		commands.put(Main.SETTINGS.commandPrefix + "deduplicate", this::cmdDeduplicate);
 		commands.put(Main.SETTINGS.commandPrefix + "queue", this::cmdQueue);
 		commands.put(Main.SETTINGS.commandPrefix + "queuel", this::cmdQueueL);
 		commands.put(Main.SETTINGS.commandPrefix + "previous", this::cmdPrevious);
 		commands.put(Main.SETTINGS.commandPrefix + "next", this::cmdNext);
+		commands.put(Main.SETTINGS.commandPrefix + "random", this::cmdRandom);
 		commands.put(Main.SETTINGS.commandPrefix + "togglepause", this::cmdTogglePause);
 		commands.put(Main.SETTINGS.commandPrefix + "pause", this::cmdPause);
 		commands.put(Main.SETTINGS.commandPrefix + "resume", this::cmdResume);
-		commands.put(Main.SETTINGS.commandPrefix + "shuffle", this::cmdShuffle);
+		commands.put(Main.SETTINGS.commandPrefix + "order", this::cmdOrder);
 		commands.put(Main.SETTINGS.commandPrefix + "stop", this::cmdStop);
 	}
 
@@ -230,8 +230,10 @@ public class PlayerMain extends Thread {
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
-			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(queryString, member);
+			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\"");
+			List<String> predictedSongLocations = MusicMetaProviders.youtubeMusicMetaProvider.getPredictedSongLocations(queryString, member);
+			musicPlayerGui.sendCommandFeedback("adding approximately " + predictedSongLocations.size() + " songs, this may take a while");
+			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(predictedSongLocations, queryString, member);
 			addInternal(songs);
 			return new Command.CommandResult(true, "added " + songs.size() + " songs");
 		} else {
@@ -248,8 +250,10 @@ public class PlayerMain extends Thread {
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
-			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(queryString, member);
+			musicPlayerGui.sendCommandFeedback("adding songs for \"" + queryString + "\"");
+			List<String> predictedSongLocations = MusicMetaProviders.localMusicMetaProvider.getPredictedSongLocations(queryString, member);
+			musicPlayerGui.sendCommandFeedback("adding approximately " + predictedSongLocations.size() + " songs, this may take a while");
+			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(predictedSongLocations, queryString, member);
 			addInternal(songs);
 
 			return new Command.CommandResult(true, "added " + songs.size() + " local songs");
@@ -301,6 +305,18 @@ public class PlayerMain extends Thread {
 		}
 	}
 
+	public Command.CommandResult cmdDeduplicate(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		Set<String> songStrings = new HashSet<>();
+		Set<Song> songs = new HashSet<>();
+		musicPlayer.removeSongs(s -> {
+			boolean added = songStrings.add(s.getDisplayName());
+			if (added) songs.add(s);
+			return !songs.contains(s);
+		});
+
+		return Command.CommandResult.SUCCESS;
+	}
+
 	public Command.CommandResult cmdKick(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		Song currentSong = musicPlayer.getCurrentSong();
 
@@ -321,8 +337,10 @@ public class PlayerMain extends Thread {
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
-			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(queryString, member);
+			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\"");
+			List<String> predictedSongLocations = MusicMetaProviders.youtubeMusicMetaProvider.getPredictedSongLocations(queryString, member);
+			musicPlayerGui.sendCommandFeedback("queueing approximately " + predictedSongLocations.size() + " songs, this may take a while");
+			List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(predictedSongLocations, queryString, member);
 			queueInternal(songs);
 			return new Command.CommandResult(true, "queued " + songs.size() + " songs");
 		} else {
@@ -338,8 +356,10 @@ public class PlayerMain extends Thread {
 		if (commandSplit.length > 1) {
 			String queryString = commandSplit[1];
 
-			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\", this may take a while");
-			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(queryString, member);
+			musicPlayerGui.sendCommandFeedback("queueing songs for \"" + queryString + "\"");
+			List<String> predictedSongLocations = MusicMetaProviders.localMusicMetaProvider.getPredictedSongLocations(queryString, member);
+			musicPlayerGui.sendCommandFeedback("queueing approximately " + predictedSongLocations.size() + " songs, this may take a while");
+			List<Song> songs = MusicMetaProviders.localMusicMetaProvider.getSongs(predictedSongLocations, queryString, member);
 			queueInternal(songs);
 
 			return new Command.CommandResult(true, "queued " + songs.size() + " local songs");
@@ -362,11 +382,11 @@ public class PlayerMain extends Thread {
 			try {
 				skips = Integer.parseInt(commandSplit[1]);
 			} catch (NumberFormatException e) {
-				new Command.CommandResult(false, "invalid number: " + commandSplit[1]);
+				return new Command.CommandResult(false, "invalid number: " + commandSplit[1]);
 			}
 
 			if (skips > 100) {
-				new Command.CommandResult(false, "number is too high: " + skips);
+				return new Command.CommandResult(false, "number is too high: " + skips);
 			}
 		}
 
@@ -382,22 +402,35 @@ public class PlayerMain extends Thread {
 	}
 
 	public Command.CommandResult cmdNext(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
-		int skips = 1;
+		SongPredicate songPredicate;
 		if (commandSplit.length > 1) {
 			try {
-				skips = Integer.parseInt(commandSplit[1]);
+				int skips = Integer.parseInt(commandSplit[1]);
+				if (skips > 100) {
+					return new Command.CommandResult(false, "number is too high: " + skips);
+				}
+				songPredicate = new SongIndexPredicate(musicPlayer.getCurrentPlaylist().currentId + skips);
 			} catch (NumberFormatException e) {
-				new Command.CommandResult(false, "invalid number: " + commandSplit[1]);
+				songPredicate = new SongSearchPredicate(commandString.split("\\s+", 2)[1]);
 			}
-
-			if (skips > 100) {
-				new Command.CommandResult(false, "number is too high: " + skips);
-			}
+		} else {
+			songPredicate = new SongInvocationPredicate(0);
 		}
 
-		for (int i = 0; i < skips; i++) {
-			musicPlayer.next();
-		}
+		musicPlayer.next(songPredicate);
+		musicPlayerGui.updatePlaylist();
+		musicPlayerGui.updatePlaylistNames();
+
+		musicPlayer.save();
+
+		return Command.CommandResult.SUCCESS;
+	}
+
+	public Command.CommandResult cmdRandom(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		Random rand = new Random();
+		SongPredicate songPredicate = new SongIndexPredicate(rand.nextInt(musicPlayer.getCurrentPlaylist().size()));
+
+		musicPlayer.next(songPredicate);
 		musicPlayerGui.updatePlaylist();
 		musicPlayerGui.updatePlaylistNames();
 
@@ -432,7 +465,7 @@ public class PlayerMain extends Thread {
 		return Command.CommandResult.SUCCESS;
 	}
 
-	public Command.CommandResult cmdShuffle(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+	public Command.CommandResult cmdOrder(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
 		if (commandSplit.length > 1) {
 			PlayList currentPlayList = musicPlayer.getCurrentPlaylist();
 
@@ -443,7 +476,7 @@ public class PlayerMain extends Thread {
 				currentPlayList.setOrder(PlayList.ORDER_SHUFFLE_TRACK);
 				return Command.CommandResult.SUCCESS;
 			} else if (commandSplit[1].equals(PlayList.ORDER_SHUFFLE_ALBUM)) {
-				currentPlayList.setOrder(PlayList.ORDER_SHUFFLE_TRACK);
+				currentPlayList.setOrder(PlayList.ORDER_SHUFFLE_ALBUM);
 				return Command.CommandResult.SUCCESS;
 			} else {
 				return new Command.CommandResult.UnknownCommandResult(commandString);
@@ -466,9 +499,12 @@ public class PlayerMain extends Thread {
 	private void loop(boolean doGuiUpdate) {
 		if (doGuiUpdate) {
 			musicPlayerGui.update();
+			musicPlayerGui.updatePlaylist();
 		}
 		musicPlayer.testCache();
-		if (!guild.getSelfMember().getVoiceState().inVoiceChannel()) {
+
+		// auto pause disabled, because it sometimes prevents the bot from playing music even if people are in the channel
+		/*if (!guild.getSelfMember().getVoiceState().inVoiceChannel()) {
 			acceptCommand(null, null, Main.SETTINGS.commandPrefix + "pause");
 		} else {
 			boolean shouldPause = true;
@@ -479,7 +515,7 @@ public class PlayerMain extends Thread {
 			if (shouldPause) {
 				acceptCommand(null, null, Main.SETTINGS.commandPrefix + "pause");
 			}
-		}
+		}*/
 
 		//System.out.println("ping: " + jda.getPing());
 	}
@@ -494,11 +530,15 @@ public class PlayerMain extends Thread {
 
 		while (isRunning) {
 			if (isActive) {
-				if (guiUpdate < 0) {
-					guiUpdate = Main.SETTINGS.playerGuiUpdateInterval;
-					loop(true);
-				} else {
-					loop(false);
+				try {
+					if (guiUpdate < 0) {
+						guiUpdate = Main.SETTINGS.playerGuiUpdateInterval;
+						loop(true);
+					} else {
+						loop(false);
+					}
+				} catch (Throwable e) {
+					e.printStackTrace();
 				}
 			}
 

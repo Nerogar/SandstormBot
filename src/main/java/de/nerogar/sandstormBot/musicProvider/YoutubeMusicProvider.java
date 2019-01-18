@@ -16,11 +16,11 @@ public class YoutubeMusicProvider implements IMusicProvider {
 
 			String[] downloadCommand = {
 					"youtube-dl",
-					"--format", "bestaudio",
+					"--format", "bestaudio/worst",
 					"--output", Main.DOWNLOAD_FOLDER + "%(id)s",
 					song.location
 			};
-			String s = MusicProviders.executeBlocking(downloadCommand, false);
+			String s = MusicProviders.executeBlocking(downloadCommand, false, false);
 			MusicProviders.convert(song.id, Main.DOWNLOAD_FOLDER + song.id);
 			Files.delete(Paths.get(Main.DOWNLOAD_FOLDER + song.id));
 		} catch (IOException e) {

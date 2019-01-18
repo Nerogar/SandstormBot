@@ -60,13 +60,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 	}
 
 	@Override
-	public int getPredictedSongCount(String query) {
-		return 0;
-	}
-
-
-	@Override
-	public List<Song> getSongs(String query, Member member) {
+	public List<String> getPredictedSongLocations(String query, Member member) {
 
 		query = query.toLowerCase();
 
@@ -77,6 +71,13 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 				songLocations.add(localFile);
 			}
 		}
+		return songLocations;
+	}
+
+	@Override
+	public List<Song> getSongs(List<String> songLocations, String query, Member member) {
+
+		query = query.toLowerCase();
 
 		ArrayList<Song> songs = new ArrayList<>();
 
@@ -96,7 +97,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 						file.toString()
 				};
 
-				String songJsonString = MusicProviders.executeBlocking(command, true);
+				String songJsonString = MusicProviders.executeBlocking(command, true, false);
 
 				JsonNode songJson = objectMapper.readTree(songJsonString);
 				if (!songJson.has("format")) continue;

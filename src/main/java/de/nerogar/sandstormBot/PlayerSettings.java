@@ -6,6 +6,8 @@ import java.util.Set;
 
 public class PlayerSettings {
 
+	public boolean debug = false;
+
 	public String loginToken = "";
 
 	public String      ownerId          = "";
@@ -20,9 +22,12 @@ public class PlayerSettings {
 
 	public int maxYoutubeSongLength = 1000 * 60 * 15;
 
-	public boolean cacheWholePlaylist = false;
+	public int songCacheLimit = 1;
 
 	public String      localFilePath;
 	public Set<String> fileExtensions = new HashSet<>();
+
+	public String redditClientId     = null;
+	public String redditClientSecret = null;
 
 }

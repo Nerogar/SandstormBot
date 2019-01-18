@@ -7,6 +7,15 @@ import java.util.Map;
 
 public interface IPlaylistPlugin {
 
+	default IPlaylistPlugin newInstance() {
+		try {
+			return getClass().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	String getName();
 
 	void init(PlayList playList);

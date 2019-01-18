@@ -10,7 +10,7 @@ public class PlaylistPlugins {
 	private static Map<String, IPlaylistPlugin> plugins;
 
 	public static IPlaylistPlugin get(String name) {
-		return plugins.get(name);
+		return plugins.get(name).newInstance();
 	}
 
 	private static void addPlugin(IPlaylistPlugin playlistPlugin) {

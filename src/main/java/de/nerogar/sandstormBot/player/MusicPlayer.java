@@ -124,26 +124,10 @@ public class MusicPlayer implements INextCache {
 	@Override
 	public Song cacheNext() {
 
-		Song currentSong = getCurrentSong();
-		if (currentSong != null && !currentSong.isCached()) {
-			// first, try caching the current song
-			return getCurrentPlaylist().getCurrentSong();
-		} else {
-
-			// next, try caching the next song
-			Song nextPlaying = getCurrentPlaylist().getNextPlaying();
+		for (int i = 0; i <= Main.SETTINGS.songCacheLimit; i++) {
+			Song nextPlaying = getCurrentPlaylist().getNextPlaying(i);
 			if (nextPlaying != null && !nextPlaying.isCached()) {
 				return nextPlaying;
-			} else {
-
-				// if both (current and next) are cached, cache other songs
-				if (Main.SETTINGS.cacheWholePlaylist) {
-					for (Song song : getCurrentPlaylist().songs) {
-						if (!song.isCached()) {
-							return song;
-						}
-					}
-				}
 			}
 		}
 
@@ -174,7 +158,7 @@ public class MusicPlayer implements INextCache {
 
 	private void play() {
 		if (getCurrentSong() == null && getCurrentPlaylist().size() > 0) {
-			getCurrentPlaylist().next();
+			getCurrentPlaylist().next(new SongIndexPredicate(0));
 		}
 
 		if (getCurrentSong() != null) {
@@ -216,9 +200,9 @@ public class MusicPlayer implements INextCache {
 		play();
 	}
 
-	public void next() {
+	public void next(SongPredicate songPredicate) {
 		player.stopTrack();
-		getCurrentPlaylist().next();
+		getCurrentPlaylist().next(songPredicate);
 		play();
 	}
 
@@ -287,11 +271,12 @@ public class MusicPlayer implements INextCache {
 		}
 
 		if (wasEmpty) {
+			player.stopTrack();
 			play();
 		}
 	}
 
-	public List<Song> searchSongs(Predicate<Song> predicate) {
+	public List<Song> searchSongs(SongPredicate predicate) {
 		return getCurrentPlaylist().songs.stream().filter(predicate).collect(Collectors.toList());
 	}
 
