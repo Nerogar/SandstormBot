@@ -49,7 +49,7 @@ public class PlayerMain extends Thread {
 
 			start();
 		} else {
-			System.out.println("could not start player for guild: " + guild.getId() + " (" + guild.getName() + ")");
+			Main.LOGGER.log(Logger.ERROR, "could not start player for guild: " + guild.getId() + " (" + guild.getName() + ")");
 			throw new IllegalStateException("guild " + guild.getId() + " is not ready for this bot");
 		}
 	}
@@ -516,8 +516,6 @@ public class PlayerMain extends Thread {
 				acceptCommand(null, null, Main.SETTINGS.commandPrefix + "pause");
 			}
 		}*/
-
-		//System.out.println("ping: " + jda.getPing());
 	}
 
 	public void setActive(boolean isActive) {
@@ -538,14 +536,14 @@ public class PlayerMain extends Thread {
 						loop(false);
 					}
 				} catch (Throwable e) {
-					e.printStackTrace();
+					e.printStackTrace(Main.LOGGER.getWarningStream());
 				}
 			}
 
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				e.printStackTrace(Main.LOGGER.getDebugStream());
 			}
 
 			guiUpdate--;

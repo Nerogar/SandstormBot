@@ -11,7 +11,7 @@ public interface IPlaylistPlugin {
 		try {
 			return getClass().newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getErrorStream());
 			return null;
 		}
 	}

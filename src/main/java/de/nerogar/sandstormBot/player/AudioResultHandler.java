@@ -5,6 +5,8 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import de.nerogar.sandstormBot.Logger;
+import de.nerogar.sandstormBot.Main;
 
 public class AudioResultHandler implements AudioLoadResultHandler {
 
@@ -23,7 +25,7 @@ public class AudioResultHandler implements AudioLoadResultHandler {
 		if (musicPlayer.getCurrentSong() == song) {
 			player.playTrack(track);
 		} else {
-			//System.out.println("wrong track finished loading: " + song.getDisplayName() + ", expected: " + musicPlayer.getCurrentSong().getDisplayName());
+			//Main.LOGGER.log(Logger.DEBUG, "wrong track finished loading: " + song.getDisplayName() + ", expected: " + musicPlayer.getCurrentSong().getDisplayName());
 		}
 	}
 
@@ -38,9 +40,9 @@ public class AudioResultHandler implements AudioLoadResultHandler {
 
 	@Override
 	public void loadFailed(FriendlyException exception) {
-		System.out.println("Loading of an audio track failed!");
-		System.out.println(song);
-		exception.printStackTrace();
+		Main.LOGGER.log(Logger.WARNING, "Loading of an audio track failed!");
+		Main.LOGGER.log(Logger.WARNING, song);
+		exception.printStackTrace(Main.LOGGER.getWarningStream());
 	}
 
 }

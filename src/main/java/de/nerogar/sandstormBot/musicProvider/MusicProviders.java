@@ -1,5 +1,6 @@
 package de.nerogar.sandstormBot.musicProvider;
 
+import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 
 import java.io.BufferedReader;
@@ -63,7 +64,7 @@ public class MusicProviders {
 						}
 
 						if (sb.length() > 0) {
-							System.out.println(sb);
+							Main.LOGGER.log(Logger.WARNING, sb);
 						}
 					}
 				}).start();
@@ -79,14 +80,14 @@ public class MusicProviders {
 			int exitCode = process.waitFor();
 
 			if (exitCode != 0 && nullOnFail) {
-				System.out.println(sb.toString());
+				Main.LOGGER.log(Logger.WARNING, sb.toString());
 				return null;
 			} else {
 				return sb.toString();
 			}
 
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getWarningStream());
 			return null;
 		}
 	}
@@ -104,7 +105,7 @@ public class MusicProviders {
 		};
 		String volumeOutput = executeBlocking(detectVolumeCommand, true, true);
 		if (volumeOutput == null) {
-			System.out.println("Could not detect volume for conversion, aborting: " + input);
+			Main.LOGGER.log(Logger.WARNING, "Could not detect volume for conversion, aborting: " + input);
 			return false;
 		}
 
@@ -136,15 +137,15 @@ public class MusicProviders {
 		String convertOutput = executeBlocking(convertCommand, false, false);
 
 		if (convertOutput == null) {
-			System.out.println("Could not convert song, skipping: " + input);
+			Main.LOGGER.log(Logger.WARNING, "Could not convert song, skipping: " + input);
 			return false;
 		}
 
 		try {
 			Files.move(Paths.get(Main.MUSIC_CONVERT_DIRECTORY + id + ".opus"), Paths.get(Main.MUSIC_CACHE_DIRECTORY + id + ".opus"), StandardCopyOption.ATOMIC_MOVE);
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Could not move song to cache directory, skipping: " + input);
+			e.printStackTrace(Main.LOGGER.getWarningStream());
+			Main.LOGGER.log(Logger.WARNING, "Could not move song to cache directory, skipping: " + input);
 			return false;
 		}
 

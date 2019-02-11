@@ -1,5 +1,6 @@
 package de.nerogar.sandstormBot.musicProvider;
 
+import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.player.INextCache;
 import de.nerogar.sandstormBot.player.Song;
 
@@ -29,7 +30,7 @@ public class MusicProvider extends Thread {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				e.printStackTrace(Main.LOGGER.getDebugStream());
 			}
 
 		}

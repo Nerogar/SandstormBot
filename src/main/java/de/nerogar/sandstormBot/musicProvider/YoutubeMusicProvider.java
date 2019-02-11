@@ -12,7 +12,7 @@ public class YoutubeMusicProvider implements IMusicProvider {
 	@Override
 	public void doCache(Song song) {
 		try {
-			// youtube-dl -f 'bestaudio' --output "%(id)s.m4a" query
+			// youtube-dl --format 'bestaudio/worst' --output "%(id)s.m4a" query
 
 			String[] downloadCommand = {
 					"youtube-dl",
@@ -24,7 +24,7 @@ public class YoutubeMusicProvider implements IMusicProvider {
 			MusicProviders.convert(song.id, Main.DOWNLOAD_FOLDER + song.id);
 			Files.delete(Paths.get(Main.DOWNLOAD_FOLDER + song.id));
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getWarningStream());
 		}
 	}
 

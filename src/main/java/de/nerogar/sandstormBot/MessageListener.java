@@ -103,12 +103,12 @@ public class MessageListener extends ListenerAdapter {
 
 	@Override
 	public void onCallVoiceJoin(CallVoiceJoinEvent event) {
-		//System.out.println("onCallVoiceJoin " + event);
+		//Main.LOGGER.log(Logger.DEBUG, "onCallVoiceJoin " + event);
 	}
 
 	@Override
 	public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-		//System.out.println("onGuildVoiceJoin " + event);
+		//Main.LOGGER.log(Logger.DEBUG, "onGuildVoiceJoin " + event);
 	}
 
 }

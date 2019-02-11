@@ -10,6 +10,7 @@ import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import de.nerogar.sandstormBot.AudioPlayerSendHandler;
+import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.PlayerMain;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -73,7 +74,7 @@ public class MusicPlayer implements INextCache {
 		} catch (IOException e) {
 			// continue without reading the files
 
-			System.out.println("No playlist files found, continue with empty playlists.");
+			Main.LOGGER.log(Logger.WARNING, "No playlist files found, continue with empty playlists.");
 
 			playQueue = new PlayQueue();
 			playLists = new ArrayList<>();
@@ -87,7 +88,7 @@ public class MusicPlayer implements INextCache {
 		try {
 			if (new File(playerMain.getGuild().getId(), "playlists.json.new").exists()
 					|| new File(playerMain.getGuild().getId(), "playlists.json.new").exists()) {
-				System.out.println("ERROR: Old playlist saves detected.\n"
+				Main.LOGGER.log(Logger.ERROR, "Old playlist saves detected.\n"
 						                   + "Rename *.json.new to *.json and restart to recover them or delete all *.json.new files to start with empty playlists!");
 				System.exit(1);
 			}
@@ -108,7 +109,7 @@ public class MusicPlayer implements INextCache {
 			Files.move(Paths.get(playerMain.getGuild().getId(), "queue.json.new"), Paths.get(playerMain.getGuild().getId(), "queue.json"), StandardCopyOption.ATOMIC_MOVE);
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getErrorStream());
 		}
 	}
 

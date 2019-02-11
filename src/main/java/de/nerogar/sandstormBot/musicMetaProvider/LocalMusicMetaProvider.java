@@ -3,6 +3,7 @@ package de.nerogar.sandstormBot.musicMetaProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.Song;
@@ -55,7 +56,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 			localFiles.sort(String::compareTo);
 
 		} catch (IOException | IndexOutOfBoundsException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getWarningStream());
 		}
 	}
 
@@ -139,10 +140,10 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 				songs.add(song);
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				e.printStackTrace(Main.LOGGER.getWarningStream());
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Could not read song, skipping: " + songLocation);
+				e.printStackTrace(Main.LOGGER.getWarningStream());
+				Main.LOGGER.log(Logger.WARNING, "Could not read song, skipping: " + songLocation);
 			}
 		}
 

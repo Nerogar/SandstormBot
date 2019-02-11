@@ -69,16 +69,15 @@ public class ListenToThisPlugin implements IPlaylistPlugin {
 
 					if (url.contains("youtube") || url.contains("youtu.be") || url.contains("soundcloud")) {
 						songLocations.add(url);
-						//System.out.println(url);
 					} else {
-						//System.out.println("url not recognized: " + url);
+						// url not recognized
 					}
 
 				}
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(Main.LOGGER.getWarningStream());
 		}
 
 		List<Song> songs = MusicMetaProviders.youtubeMusicMetaProvider.getSongs(songLocations, null, member);
