@@ -30,4 +30,7 @@ public class PlayerSettings {
 	public String redditClientId     = null;
 	public String redditClientSecret = null;
 
+	public String ffmpegCommand = "ffmpeg";
+	public String youtubDlCommand = "youtube-dl";
+
 }

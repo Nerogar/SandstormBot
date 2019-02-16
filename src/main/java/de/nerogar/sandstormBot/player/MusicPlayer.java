@@ -4,12 +4,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import de.nerogar.sandstormBot.AudioPlayerSendHandler;
+import de.nerogar.sandstormBot.FFmpegAudioPlayerSendHandler;
 import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.PlayerMain;
@@ -31,9 +26,9 @@ public class MusicPlayer implements INextCache {
 	private PlayerMain playerMain;
 
 	// player classes
-	private AudioManager       audioManager;
-	private AudioPlayerManager playerManager;
-	private AudioPlayer        player;
+	private AudioManager     audioManager;
+	private OpusPlayerEvents opusPlayerEvents;
+	private OpusPlayer       player;
 
 	// playlists
 	private List<PlayList> playLists;
@@ -50,12 +45,10 @@ public class MusicPlayer implements INextCache {
 
 		load();
 
-		playerManager = new DefaultAudioPlayerManager();
-		AudioSourceManagers.registerLocalSource(playerManager);
-
-		player = playerManager.createPlayer();
-		player.addListener(new SongEvents(playerMain, this));
-		audioManager.setSendingHandler(new AudioPlayerSendHandler(player));
+		opusPlayerEvents = new OpusPlayerEventsImpl(playerMain);
+		player = new OpusPlayer(opusPlayerEvents);
+		//player.addListener(new SongEvents(playerMain, this));
+		audioManager.setSendingHandler(new FFmpegAudioPlayerSendHandler(player));
 
 		play();
 	}
@@ -89,7 +82,7 @@ public class MusicPlayer implements INextCache {
 			if (new File(playerMain.getGuild().getId(), "playlists.json.new").exists()
 					|| new File(playerMain.getGuild().getId(), "playlists.json.new").exists()) {
 				Main.LOGGER.log(Logger.ERROR, "Old playlist saves detected.\n"
-						                   + "Rename *.json.new to *.json and restart to recover them or delete all *.json.new files to start with empty playlists!");
+						+ "Rename *.json.new to *.json and restart to recover them or delete all *.json.new files to start with empty playlists!");
 				System.exit(1);
 			}
 
@@ -119,7 +112,7 @@ public class MusicPlayer implements INextCache {
 
 	public void disconnect() {
 		audioManager.closeAudioConnection();
-		player.destroy();
+		player.cleanup();
 	}
 
 	@Override
@@ -153,8 +146,7 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public long getCurrentPosition() {
-		AudioTrack playingTrack = player.getPlayingTrack();
-		return playingTrack == null ? 0 : playingTrack.getPosition();
+		return player.getProgress();
 	}
 
 	private void play() {
@@ -164,11 +156,15 @@ public class MusicPlayer implements INextCache {
 
 		if (getCurrentSong() != null) {
 			if (getCurrentSong().isCached()) {
-				playerManager.loadItem(Main.MUSIC_CACHE_DIRECTORY + getCurrentSong().id + Main.MUSIC_EXTENSION, new AudioResultHandler(this, getCurrentSong(), player));
+				player.play(Main.MUSIC_CACHE_DIRECTORY + getCurrentSong().id);
 			} else {
 				waitingForCache = true;
 			}
 		}
+	}
+
+	public void setPlaybackSettings(PlaybackSettings playbackSettings) {
+		player.setPlaybackSettings(playbackSettings);
 	}
 
 	public void testCache() {
@@ -184,11 +180,11 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public void pause() {
-		if (!isPaused()) player.setPaused(true);
+		if (!isPaused()) player.pause();
 	}
 
 	public void resume() {
-		if (isPaused()) player.setPaused(false);
+		if (isPaused()) player.resume();
 	}
 
 	public boolean isPaused() {
@@ -196,13 +192,13 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public void previous() {
-		player.stopTrack();
+		player.stop();
 		getCurrentPlaylist().previous();
 		play();
 	}
 
 	public void next(SongPredicate songPredicate) {
-		player.stopTrack();
+		player.stop();
 		getCurrentPlaylist().next(songPredicate);
 		play();
 	}
@@ -214,7 +210,7 @@ public class MusicPlayer implements INextCache {
 	public void switchPlaylist(String name) {
 		name = name.toLowerCase();
 
-		player.stopTrack();
+		player.stop();
 
 		PlayList nextPlaylist = null;
 		for (PlayList playList : playLists) {
@@ -228,7 +224,7 @@ public class MusicPlayer implements INextCache {
 			currentPlaylist = nextPlaylist;
 
 			if (getCurrentPlaylist() != playQueue) {
-				player.stopTrack();
+				player.stop();
 				play();
 			}
 		}
@@ -272,7 +268,7 @@ public class MusicPlayer implements INextCache {
 		}
 
 		if (wasEmpty) {
-			player.stopTrack();
+			player.stop();
 			play();
 		}
 	}
@@ -284,7 +280,7 @@ public class MusicPlayer implements INextCache {
 	public int removeSongs(Predicate<Song> predicate) {
 		boolean removedCurrent = false;
 		if (getCurrentSong() != null && predicate.test(getCurrentSong())) {
-			player.stopTrack();
+			player.stop();
 			removedCurrent = true;
 		}
 
@@ -296,7 +292,7 @@ public class MusicPlayer implements INextCache {
 	}
 
 	public void removeCurrentSong() {
-		player.stopTrack();
+		player.stop();
 
 		Song currentSong = getCurrentSong();
 		getCurrentPlaylist().remove(s -> s == currentSong);

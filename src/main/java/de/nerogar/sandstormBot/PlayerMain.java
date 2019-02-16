@@ -102,6 +102,8 @@ public class PlayerMain extends Thread {
 		commands.put(Main.SETTINGS.commandPrefix + "resume", this::cmdResume);
 		commands.put(Main.SETTINGS.commandPrefix + "order", this::cmdOrder);
 		commands.put(Main.SETTINGS.commandPrefix + "stop", this::cmdStop);
+
+		commands.put(Main.SETTINGS.commandPrefix + "filter", this::cmdFilter);
 	}
 
 	public static boolean checkOwner(Member member) {
@@ -485,6 +487,23 @@ public class PlayerMain extends Thread {
 			return new Command.CommandResult.UnknownCommandResult(commandString);
 		}
 
+	}
+
+	public Command.CommandResult cmdFilter(MessageChannel channel, Member member, String[] commandSplit, String commandString) {
+		if (!checkPrivilege(member)) return Command.CommandResult.ERROR_PERMISSION;
+
+		if (commandSplit.length > 1) {
+			PlaybackSettings playbackSettings = new PlaybackSettings();
+			playbackSettings.filter = commandSplit[1];
+			musicPlayer.setPlaybackSettings(playbackSettings);
+
+			return new Command.CommandResult(true, "set filter to: " + commandSplit[1]);
+		} else {
+			PlaybackSettings playbackSettings = new PlaybackSettings();
+			musicPlayer.setPlaybackSettings(playbackSettings);
+
+			return new Command.CommandResult(true, "cleared filter");
+		}
 	}
 
 	public Command.CommandResult cmdStop(MessageChannel channel, Member member, String[] commandSplit, String commandString) {

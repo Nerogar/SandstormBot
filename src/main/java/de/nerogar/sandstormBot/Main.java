@@ -16,11 +16,10 @@ public class Main {
 
 	public static final Logger LOGGER = new Logger("global");
 
-	public static final String MUSIC_CACHE_DIRECTORY   = "musicCache/";
-	public static final String MUSIC_CONVERT_DIRECTORY = "musicCache/converting/";
-	public static       String DOWNLOAD_FOLDER         = MUSIC_CACHE_DIRECTORY + "downloading/";
-	public static final String MUSIC_EXTENSION         = ".opus";
-	public static final float  VOLUME                  = -24;
+	public static final String MUSIC_CACHE_DIRECTORY = "musicCache/";
+	public static final String IR_DIRECTORY          = "IR/";
+	public static       String DOWNLOAD_DIRECTORY    = MUSIC_CACHE_DIRECTORY + "downloading/";
+	public static final float  VOLUME                = -24;
 
 	public static PlayerSettings SETTINGS;
 
@@ -40,8 +39,12 @@ public class Main {
 
 	private static void createLogger() {
 		// redirect default streams
-		System.setErr(LOGGER.getWarningStream());
-		System.setOut(LOGGER.getInfoStream());
+		if (!SETTINGS.debug) {
+			System.setErr(LOGGER.getWarningStream());
+			System.setOut(LOGGER.getInfoStream());
+		} else {
+			LOGGER.addStream(Logger.DEBUG, System.out);
+		}
 
 		LOGGER.setPrintTimestamp(true);
 
@@ -71,12 +74,13 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws LoginException, InterruptedException {
-		createLogger();
-
 		if (!loadConfig()) return;
 
-		new File(DOWNLOAD_FOLDER).mkdirs();
-		new File(MUSIC_CONVERT_DIRECTORY).mkdirs();
+		createLogger();
+
+		new File(MUSIC_CACHE_DIRECTORY).mkdirs();
+		new File(DOWNLOAD_DIRECTORY).mkdirs();
+		new File(IR_DIRECTORY).mkdirs();
 
 		MusicProviders.init();
 
@@ -88,7 +92,7 @@ public class Main {
 
 		jda.awaitReady();
 
-		createDiscordLogStream(jda);
+		//createDiscordLogStream(jda);
 
 		messageListener.setJDA(jda);
 

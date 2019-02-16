@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Command;
 import de.nerogar.sandstormBot.IPlaylistPlugin;
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicMetaProvider.MusicMetaProviders;
-import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.PlayList;
 import de.nerogar.sandstormBot.player.Song;
 import net.dv8tion.jda.core.entities.Member;
@@ -52,7 +52,7 @@ public class ListenToThisPlugin implements IPlaylistPlugin {
 				"-L", "https://www.reddit.com/r/listentothis/hot.json?sort=new&count=20"
 		};
 
-		String subredditResponse = MusicProviders.executeBlocking(curlCommand, true, false);
+		String subredditResponse = ProcessHelper.executeBlocking(curlCommand, true, false);
 		ObjectMapper objectMapper = new ObjectMapper();
 
 		try {

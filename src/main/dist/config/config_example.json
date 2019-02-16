@@ -51,6 +51,10 @@
 	// 2. create a new app
 	// 3. fill out the required fields, select the script app type
 	"redditClientId": null,
-	"redditClientSecret": null
+	"redditClientSecret": null,
+
+	// external program commands
+	"ffmpegCommand" : "ffmpeg",
+	"youtubDlCommand" : "youtube-dl"
 
 }

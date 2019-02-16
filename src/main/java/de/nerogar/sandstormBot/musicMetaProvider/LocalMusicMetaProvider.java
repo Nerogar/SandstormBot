@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.Song;
 import net.dv8tion.jda.core.entities.Member;
@@ -98,7 +99,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 						file.toString()
 				};
 
-				String songJsonString = MusicProviders.executeBlocking(command, true, false);
+				String songJsonString = ProcessHelper.executeBlocking(command, true, false);
 
 				JsonNode songJson = objectMapper.readTree(songJsonString);
 				if (!songJson.has("format")) continue;

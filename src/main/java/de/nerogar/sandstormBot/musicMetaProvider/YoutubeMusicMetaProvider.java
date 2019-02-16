@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.PlayerMain;
+import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.Song;
 import net.dv8tion.jda.core.entities.Member;
@@ -32,7 +33,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 				"--",
 				query
 		};
-		String youtubeResponse = MusicProviders.executeBlocking(youtubeDLRequest, true, false);
+		String youtubeResponse = ProcessHelper.executeBlocking(youtubeDLRequest, true, false);
 
 		if (youtubeResponse == null) return Collections.emptyList();
 
@@ -128,7 +129,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 
 				// note: don't use nullOnFail, youtube-dl will return an error code even if only one song could not be downloaded
 				// ignore this warning if only one song is downloaded per youtube-dl invocation
-				String youtubeResponse = MusicProviders.executeBlocking(youtubeDLCommand, true, false);
+				String youtubeResponse = ProcessHelper.executeBlocking(youtubeDLCommand, true, false);
 
 				if (youtubeResponse == null) return null;
 
@@ -196,7 +197,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 				}
 
 				// note: don't use nullOnFail, youtube-dl will return an error code even if only one song could not be downloaded
-				youtubeResponse[finalI] = MusicProviders.executeBlocking(youtubeDLCommand, false, false);
+				youtubeResponse[finalI] = ProcessHelper.executeBlocking(youtubeDLCommand, false, false);
 			});
 		}
 

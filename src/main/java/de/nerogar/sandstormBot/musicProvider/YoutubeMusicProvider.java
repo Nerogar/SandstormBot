@@ -1,11 +1,13 @@
 package de.nerogar.sandstormBot.musicProvider;
 
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.player.Song;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class YoutubeMusicProvider implements IMusicProvider {
 
@@ -17,12 +19,11 @@ public class YoutubeMusicProvider implements IMusicProvider {
 			String[] downloadCommand = {
 					"youtube-dl",
 					"--format", "bestaudio/worst",
-					"--output", Main.DOWNLOAD_FOLDER + "%(id)s",
+					"--output", Main.DOWNLOAD_DIRECTORY + "%(id)s",
 					song.location
 			};
-			String s = MusicProviders.executeBlocking(downloadCommand, false, false);
-			MusicProviders.convert(song.id, Main.DOWNLOAD_FOLDER + song.id);
-			Files.delete(Paths.get(Main.DOWNLOAD_FOLDER + song.id));
+			String s = ProcessHelper.executeBlocking(downloadCommand, false, false);
+			Files.move(Paths.get(Main.DOWNLOAD_DIRECTORY + song.id), Paths.get(Main.MUSIC_CACHE_DIRECTORY + song.id), StandardCopyOption.ATOMIC_MOVE);
 		} catch (IOException e) {
 			e.printStackTrace(Main.LOGGER.getWarningStream());
 		}

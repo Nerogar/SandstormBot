@@ -68,7 +68,7 @@ public class Song {
 	@JsonIgnore
 	public final boolean isCached() {
 		if (cached) return true;
-		boolean exists = Files.exists(Paths.get(Main.MUSIC_CACHE_DIRECTORY + id + Main.MUSIC_EXTENSION));
+		boolean exists = Files.exists(Paths.get(Main.MUSIC_CACHE_DIRECTORY + id));
 		if (exists) cached = true;
 		return exists;
 	}
