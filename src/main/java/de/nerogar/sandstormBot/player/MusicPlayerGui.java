@@ -1,6 +1,7 @@
 package de.nerogar.sandstormBot.player;
 
 import de.nerogar.sandstormBot.Main;
+import de.nerogar.sandstormBot.PlayerSettings;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
@@ -35,10 +36,9 @@ public class MusicPlayerGui {
 		playlistMessage = channel.sendMessage("```playlist```").complete();
 		playerMessage = channel.sendMessage("```player```").complete();
 
-		playerMessage.addReaction("⏯").queue();
-		playerMessage.addReaction("⏮").queue();
-		playerMessage.addReaction("⏭").queue();
-		playerMessage.addReaction("🔀").queue();
+		for (PlayerSettings.EmoteCommand emoteCommand : Main.SETTINGS.emoteCommands) {
+			if (!emoteCommand.hidden) playerMessage.addReaction(emoteCommand.emote).queue();
+		}
 
 	}
 

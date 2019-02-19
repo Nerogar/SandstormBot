@@ -29,6 +29,7 @@ public class Main {
 			objectMapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
 			SETTINGS = objectMapper.readValue(new File("config/config.json"), PlayerSettings.class);
 		} catch (IOException e) {
+			e.printStackTrace();
 			e.printStackTrace(LOGGER.getErrorStream());
 			LOGGER.log(Logger.ERROR, "Could not load settings!");
 			return false;

@@ -22,12 +22,15 @@
 	"playlistGuiEntries": 12,
 	"playlistGuiPadding": 1,
 
+	// maximum song length non privileged users can add
 	"maxYoutubeSongLength": 900000,
 
-	// amount of songs to be cached ahead of time
-	"songCacheLimit": 1,
+	// if you have less than 1GB RAM available, you should decrease this number
+	// each process uses approximately 35MB RAM
+	"maxYoutubeDlProcesses": 10,
 
-	"cacheWholePlaylist": false,
+	// amount of songs to be cached ahead of time
+	"songCacheLimit": 5,
 
 	// Path to the root directory for local files.
 	"localFilePath": "../music/",
@@ -46,15 +49,15 @@
 		"mpeg"
 	],
 
-	// To generate an api key:
-	// 1. visit reddit.com/prefs/apps
-	// 2. create a new app
-	// 3. fill out the required fields, select the script app type
-	"redditClientId": null,
-	"redditClientSecret": null,
+	"emoteCommands": [
+		{"emote": "⏯", "command": "togglepause", "hidden": false},
+		{"emote": "⏮", "command": "previous", "hidden": false},
+		{"emote": "⏭", "command": "next", "hidden": false},
+		{"emote": "🔀", "command": "random", "hidden": false}
+	],
 
 	// external program commands
-	"ffmpegCommand" : "ffmpeg",
-	"youtubDlCommand" : "youtube-dl"
+	"ffmpegCommand": "ffmpeg",
+	"youtubDlCommand": "youtube-dl"
 
 }

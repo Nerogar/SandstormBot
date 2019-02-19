@@ -9,13 +9,15 @@ import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.Song;
 import net.dv8tion.jda.core.entities.Member;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -135,7 +137,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 					title = file.getName();
 				}
 
-				String id = DigestUtils.sha256Hex(songLocation);
+				String id = sha256(songLocation);
 				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, query, member.getEffectiveName());
 
 				songs.add(song);
@@ -149,6 +151,27 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 		}
 
 		return songs;
+	}
+
+	private String sha256(String in) {
+		MessageDigest digest;
+		try {
+			digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(in.getBytes(StandardCharsets.UTF_8));
+			StringBuilder sb = new StringBuilder();
+
+			for (byte b : hash) {
+				String hexByte = Integer.toHexString(b & 0xFF);
+				if (hexByte.length() == 1) sb.append('0');
+				sb.append(hexByte);
+			}
+
+			return sb.toString();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace(Main.LOGGER.getErrorStream());
+		}
+
+		return null;
 	}
 
 }

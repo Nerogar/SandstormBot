@@ -71,7 +71,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 				JsonNode jsonNode = objectMapper.readTree(songResponse);
 
 				// for now, live streams are not supported
-				boolean isLive = jsonNode.get("is_live").isNull() ? false : jsonNode.get("is_live").asBoolean();
+				boolean isLive = jsonNode.has("is_live") ? (jsonNode.get("is_live").isNull() ? false : jsonNode.get("is_live").asBoolean()) : false;
 				if (isLive) continue;
 
 				String id = jsonNode.get("id").toString().replaceAll("\"", "");
@@ -108,7 +108,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 	}
 
 	private List<String> getSongsInternalSingle(List<String> songLocations) {
-		ExecutorService executorService = Executors.newFixedThreadPool(10);
+		ExecutorService executorService = Executors.newFixedThreadPool(Main.SETTINGS.maxYoutubeDlProcesses);
 
 		List<Future<SortableSong>> sortableSongFutures = new ArrayList<>();
 
@@ -162,7 +162,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 
 	private List<String> getSongsInternalBatch(List<String> songLocations) {
 		final int n = songLocations.size();
-		final int threads = Math.min(songLocations.size(), 10);
+		final int threads = Math.min(songLocations.size(), Main.SETTINGS.maxYoutubeDlProcesses);
 
 		List<List<String>> sortableSongs = new ArrayList<>();
 

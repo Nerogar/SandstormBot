@@ -46,7 +46,7 @@ public class ListenToThisPlugin implements IPlaylistPlugin {
 		List<String> songLocations = new ArrayList<>();
 
 		String[] curlCommand = {
-				"curl",
+				Main.SETTINGS.curlCommand,
 				"-X", "GET",
 				"-A", "bot:de.nerogar.sandstormBot:v0.1 (by /u/nerogar)",
 				"-L", "https://www.reddit.com/r/listentothis/hot.json?sort=new&count=20"
