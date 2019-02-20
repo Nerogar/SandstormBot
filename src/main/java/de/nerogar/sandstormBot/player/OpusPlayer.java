@@ -206,7 +206,7 @@ public class OpusPlayer {
 		if (playbackSettings.filter != null) {
 			detectVolumeCommand.addAll(Arrays.asList(
 					"-i", Main.IR_DIRECTORY + playbackSettings.filter,
-					"-filter_complex", "[0:a]afir[filtered]; [filtered]volumedetect[out]"
+					"-filter_complex", "[0:a]afir[filtered]; [filtered]equalizer=f=10:t=h:width=100:g=-20[equal]; [equal]volumedetect[out]"
 			                                        ));
 		} else {
 			detectVolumeCommand.addAll(Arrays.asList(
