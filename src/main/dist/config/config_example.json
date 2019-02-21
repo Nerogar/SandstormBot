@@ -1,8 +1,14 @@
 {
 	"debug": false,
 
+	// to generate the login token:
+	// 1. go to  https://discordapp.com/developers/applications/
+	// 2. create a new application
+	// 3. go to the Bot tab and add a bot
 	"loginToken": "",
 
+
+	// your discord user id (enable developer mode in discord if you don't see "Copy ID" in the right click menu on your username)
 	"ownerId": "",
 
 	// Users with any of these roles will have additional permission.
