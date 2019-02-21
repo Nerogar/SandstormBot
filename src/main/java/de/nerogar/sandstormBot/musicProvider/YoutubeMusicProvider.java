@@ -17,7 +17,7 @@ public class YoutubeMusicProvider implements IMusicProvider {
 			// youtube-dl --format 'bestaudio/worst' --output "%(id)s.m4a" query
 
 			String[] downloadCommand = {
-					"youtube-dl",
+					Main.SETTINGS.youtubDlCommand,
 					"--format", "bestaudio/worst",
 					"--output", Main.DOWNLOAD_DIRECTORY + "%(id)s",
 					song.location

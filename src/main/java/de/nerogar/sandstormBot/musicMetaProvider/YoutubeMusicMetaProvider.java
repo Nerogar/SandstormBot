@@ -25,7 +25,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 
 		// youtube-dl --ignore-errors --flat-playlist --default-search ytsearch1: --format bestaudio --output %(id)s --dump-json -- input
 		String[] youtubeDLRequest = {
-				"youtube-dl",
+				Main.SETTINGS.youtubDlCommand,
 				"--ignore-errors",
 				"--flat-playlist",
 				"--default-search", "ytsearch1:",
@@ -119,7 +119,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 			sortableSongFutures.add(executorService.submit(() -> {
 				// youtube-dl --ignore-errors --default-search ytsearch1: --dump-json -- query
 				String[] youtubeDLCommand = {
-						"youtube-dl",
+						Main.SETTINGS.youtubDlCommand,
 						"--ignore-errors",
 						"--default-search", "ytsearch1:",
 						"--dump-json",
@@ -186,7 +186,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 			workerThreads[i] = new Thread(() -> {
 				// youtube-dl --ignore-errors --default-search ytsearch1: --dump-json -- query
 				String[] youtubeDLCommand = new String[6 + sortableSongs.get(finalI).size()];
-				youtubeDLCommand[0] = "youtube-dl";
+				youtubeDLCommand[0] = Main.SETTINGS.youtubDlCommand;
 				youtubeDLCommand[1] = "--ignore-errors"; youtubeDLCommand[2] = "--default-search";
 				youtubeDLCommand[3] = "ytsearch1:";
 				youtubeDLCommand[4] = "--dump-json";

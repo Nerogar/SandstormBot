@@ -23,6 +23,8 @@ public class Song {
 	public int  playCount;
 	public long lastPlayed;
 
+	// fixme: if a song can not be cached (file not found etc), the bot will try to cache this song and gets stuck in an infinite loop
+	// solution: if a song can not be cached, remember that and skip that song (maybe even mark it in the gui)
 	private boolean cached;
 
 	public Song(JsonNode jsonNode) {
