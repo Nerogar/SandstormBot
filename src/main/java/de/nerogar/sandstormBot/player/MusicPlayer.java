@@ -298,4 +298,8 @@ public class MusicPlayer implements INextCache {
 		getCurrentPlaylist().remove(s -> s == currentSong);
 	}
 
+	public void seekRelative(double delta) {
+		player.seekRelative(delta);
+	}
+
 }

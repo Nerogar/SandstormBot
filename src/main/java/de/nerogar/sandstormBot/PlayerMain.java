@@ -102,8 +102,25 @@ public class PlayerMain extends Thread {
 		commands.put(Main.SETTINGS.commandPrefix + "resume", this::cmdResume);
 		commands.put(Main.SETTINGS.commandPrefix + "order", this::cmdOrder);
 		commands.put(Main.SETTINGS.commandPrefix + "stop", this::cmdStop);
+		commands.put(Main.SETTINGS.commandPrefix + "seek", this::cmdSeek);
 
 		commands.put(Main.SETTINGS.commandPrefix + "filter", this::cmdFilter);
+	}
+
+	private Command.CommandResult cmdSeek(MessageChannel messageChannel, Member member, String[] strings, String s) {
+
+		// rewind 10 seconds by default
+		double delta = -10;
+		if (strings.length > 1) {
+			try {
+				delta = Double.parseDouble(strings[1]);
+			} catch (NumberFormatException e) {
+				return new Command.CommandResult(false, "illegal seek value, expected number of seconds.");
+			}
+		}
+
+		musicPlayer.seekRelative(delta);
+		return Command.CommandResult.SUCCESS;
 	}
 
 	public static boolean checkOwner(Member member) {

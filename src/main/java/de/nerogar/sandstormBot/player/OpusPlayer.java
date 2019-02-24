@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 
 public class OpusPlayer {
 
@@ -37,15 +38,15 @@ public class OpusPlayer {
 	}
 
 	public boolean play(String filename) {
-		return play(filename, true);
+		return play(filename, 0);
 	}
 
-	private boolean play(String filename, boolean resetProgress) {
+	private boolean play(String filename, long newProgress) {
 
 		this.filename = filename;
 
 		if (packetReader != null) stop();
-		if (resetProgress) progress = 0;
+		progress = newProgress;
 
 		streamProcess = createStreamProcess(filename);
 
@@ -73,7 +74,7 @@ public class OpusPlayer {
 	public void setPlaybackSettings(PlaybackSettings playbackSettings) {
 		this.playbackSettings = playbackSettings;
 
-		play(filename, false);
+		play(filename, getProgress());
 	}
 
 	public long getProgress() {
@@ -198,7 +199,7 @@ public class OpusPlayer {
 
 		detectVolumeCommand.addAll(Arrays.asList(
 				"-hide_banner",
-				"-ss", String.valueOf(((double) progress / 1000)),
+				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d),
 				"-t", String.valueOf(VOLUME_DETECT_DURATION),
 				"-i", filename
 		                                        ));
@@ -267,7 +268,7 @@ public class OpusPlayer {
 
 		streamCommand.addAll(Arrays.asList(
 				"-hide_banner",
-				"-ss", String.valueOf(((double) progress / 1000)),
+				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d),
 				"-i", filename
 		                                  ));
 
@@ -302,6 +303,14 @@ public class OpusPlayer {
 
 	public void cleanup() {
 		stop();
+	}
+
+	public void seekRelative(double delta) {
+		// calculate in seconds
+		double currentProgress = progress / 1000d;
+		double newProgress = currentProgress + delta;
+		if (newProgress < 0) newProgress = 0;
+		play(filename, (long) (newProgress * 1000));
 	}
 
 }
