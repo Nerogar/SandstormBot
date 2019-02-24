@@ -60,6 +60,8 @@
 	"emoteCommands": [
 		{"emote": "⏯", "command": "togglepause", "hidden": false},
 		{"emote": "⏮", "command": "previous", "hidden": false},
+		{"emote": "⏪", "command": "seek -5", "hidden": false},
+		{"emote": "⏩", "command": "seek 5", "hidden": false},
 		{"emote": "⏭", "command": "next", "hidden": false},
 		{"emote": "🔀", "command": "random", "hidden": false}
 	],

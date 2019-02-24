@@ -73,3 +73,4 @@ Additional:
  - `!filter <filtername>` set the impulse response filter to `<filtername>`
  	* Filters can be placed in the `IR` directory
  - `!filter` clears the impulse response filter
+ - `!seek` seeks forwards or backwards, in seconds. For example `-5` rewinds 5 seconds.
