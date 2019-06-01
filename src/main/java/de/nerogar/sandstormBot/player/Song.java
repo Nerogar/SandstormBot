@@ -10,15 +10,16 @@ import java.nio.file.Paths;
 
 public class Song {
 
-	public String id;
-	public String providerName;
-	public String location;
-	public String title;
-	public String artist;
-	public String album;
-	public long   duration;
-	public String request;
-	public String user;
+	public String  id;
+	public String  providerName;
+	public String  location;
+	public String  title;
+	public String  artist;
+	public String  album;
+	public long    duration;
+	public boolean isLive;
+	public String  request;
+	public String  user;
 
 	public int  playCount;
 	public long lastPlayed;
@@ -35,15 +36,15 @@ public class Song {
 		artist = jsonNode.has("artist") ? (jsonNode.get("artist").isNull() ? null : jsonNode.get("artist").asText()) : null;
 		album = jsonNode.has("album") ? (jsonNode.get("album").isNull() ? null : jsonNode.get("album").asText()) : null;
 		duration = jsonNode.get("duration").asLong();
+		isLive = jsonNode.has("isLive") ? jsonNode.get("isLive").asBoolean() : false;
 		request = jsonNode.get("request").asText();
 		user = jsonNode.get("user").asText();
 
-		title = jsonNode.has("title") ? (jsonNode.get("title").isNull() ? null : jsonNode.get("title").asText()) : null;
 		playCount = jsonNode.has("playCount") ? jsonNode.get("playCount").asInt() : 0;
 		lastPlayed = jsonNode.has("lastPlayed") ? jsonNode.get("lastPlayed").asLong() : 0;
 	}
 
-	public Song(String id, String providerName, String location, String title, String artist, String album, long duration, String request, String user) {
+	public Song(String id, String providerName, String location, String title, String artist, String album, long duration, boolean isLive, String request, String user) {
 		this.id = id;
 		this.providerName = providerName;
 		this.location = location;
@@ -51,6 +52,7 @@ public class Song {
 		this.artist = artist;
 		this.album = album;
 		this.duration = duration;
+		this.isLive = isLive;
 		this.request = request;
 		this.user = user;
 	}
@@ -69,7 +71,7 @@ public class Song {
 
 	@JsonIgnore
 	public final boolean isCached() {
-		if (cached) return true;
+		if (cached || isLive) return true;
 		boolean exists = Files.exists(Paths.get(Main.MUSIC_CACHE_DIRECTORY + id));
 		if (exists) cached = true;
 		return exists;

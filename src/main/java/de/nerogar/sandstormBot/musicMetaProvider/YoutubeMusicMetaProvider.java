@@ -72,7 +72,6 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 
 				// for now, live streams are not supported
 				boolean isLive = jsonNode.has("is_live") ? (jsonNode.get("is_live").isNull() ? false : jsonNode.get("is_live").asBoolean()) : false;
-				if (isLive) continue;
 
 				String id = jsonNode.get("id").toString().replaceAll("\"", "");
 				String webpage_url = jsonNode.get("webpage_url").toString().replaceAll("\"", "");
@@ -91,7 +90,7 @@ public class YoutubeMusicMetaProvider implements IMusicMetaProvider {
 				// if the duration is unknown, assume a default of 10 minutes
 				long duration = jsonNode.has("duration") ? jsonNode.get("duration").asLong() * 1000 : 10 * 60 * 1000;
 
-				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, artist, sortableSongs.size() > 1 ? query : null, duration, query, member.getEffectiveName());
+				Song song = new Song(id, MusicProviders.YOUTUBE_DL, webpage_url, title, artist, sortableSongs.size() > 1 ? query : null, duration, isLive, query, member.getEffectiveName());
 
 				songs.add(song);
 			} catch (IOException e) {

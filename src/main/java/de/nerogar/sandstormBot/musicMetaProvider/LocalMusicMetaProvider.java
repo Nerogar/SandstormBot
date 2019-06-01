@@ -138,7 +138,7 @@ public class LocalMusicMetaProvider implements IMusicMetaProvider {
 				}
 
 				String id = sha256(songLocation);
-				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, query, member.getEffectiveName());
+				Song song = new Song(id, MusicProviders.LOCAL, songLocation, title, artist, album, duration, false, query, member.getEffectiveName());
 
 				songs.add(song);
 

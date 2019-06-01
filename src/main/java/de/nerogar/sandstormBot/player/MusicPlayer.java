@@ -156,7 +156,7 @@ public class MusicPlayer implements INextCache {
 
 		if (getCurrentSong() != null) {
 			if (getCurrentSong().isCached()) {
-				player.play(Main.MUSIC_CACHE_DIRECTORY + getCurrentSong().id);
+				player.play(getCurrentSong());
 			} else {
 				waitingForCache = true;
 			}

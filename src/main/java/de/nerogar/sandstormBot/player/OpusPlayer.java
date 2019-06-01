@@ -23,7 +23,7 @@ public class OpusPlayer {
 	private OpusPlayerEvents events;
 
 	private Process         streamProcess;
-	private String          filename;
+	private Song            song;
 	private OggFile         oggFile;
 	private OggPacketReader packetReader;
 	private OggPacket       nextPacket;
@@ -37,18 +37,18 @@ public class OpusPlayer {
 		playbackSettings = new PlaybackSettings();
 	}
 
-	public boolean play(String filename) {
-		return play(filename, 0);
+	public boolean play(Song song) {
+		return play(song, 0);
 	}
 
-	private boolean play(String filename, long newProgress) {
+	private boolean play(Song song, long newProgress) {
 
-		this.filename = filename;
+		this.song = song;
 
 		if (packetReader != null) stop();
 		progress = newProgress;
 
-		streamProcess = createStreamProcess(filename);
+		streamProcess = createStreamProcess(song);
 
 		BufferedInputStream in = new BufferedInputStream(streamProcess.getInputStream(), 64 * 1024);
 
@@ -74,7 +74,7 @@ public class OpusPlayer {
 	public void setPlaybackSettings(PlaybackSettings playbackSettings) {
 		this.playbackSettings = playbackSettings;
 
-		play(filename, getProgress());
+		play(song, getProgress());
 	}
 
 	public long getProgress() {
@@ -250,7 +250,7 @@ public class OpusPlayer {
 		return volumeMean;
 	}
 
-	private Process createStreamProcess(String filename) {
+	private Process createStreamProcess(Song song) {
 		/*
 		 * ffmpeg -hide_banner -ss PROGRESS -i INPUT -i FILTER \
 		 * -filter_complex \
@@ -262,17 +262,40 @@ public class OpusPlayer {
 		ArrayList<String> streamCommand = new ArrayList<>(Collections.singletonList(
 				Main.SETTINGS.ffmpegCommand
 		                                                                           ));
-		if (!Main.SETTINGS.debug) streamCommand.addAll(Arrays.asList(
-				"-loglevel", "quiet"
-		                                                            ));
+		if (Main.SETTINGS.debug) {
+			/*streamCommand.addAll(Arrays.asList(
+					"-loglevel", "debug"
+			                                  ));*/
+		} else {
+			streamCommand.addAll(Arrays.asList(
+					"-loglevel", "quiet"
+			                                  ));
+		}
 
 		streamCommand.addAll(Arrays.asList(
 				"-hide_banner",
-				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d),
-				"-i", filename
+				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d)
 		                                  ));
 
-		float volume = detectVolume(filename);
+		if (!song.isLive) {
+			streamCommand.addAll(Arrays.asList(
+					"-i", Main.MUSIC_CACHE_DIRECTORY + song.id
+			                                  ));
+		} else {
+
+			String url = ProcessHelper.executeBlocking(new String[] {
+					Main.SETTINGS.youtubDlCommand, "-g", song.location
+			}, false, false).trim();
+
+			streamCommand.addAll(Arrays.asList(
+					"-i", url
+			                                  ));
+		}
+
+		float volume = 0;
+		if (!song.isLive) {
+			volume = detectVolume(song.id);
+		}
 		if (playbackSettings.filter != null) {
 			streamCommand.addAll(Arrays.asList(
 					"-i", Main.IR_DIRECTORY + playbackSettings.filter,
@@ -310,7 +333,7 @@ public class OpusPlayer {
 		double currentProgress = progress / 1000d;
 		double newProgress = currentProgress + delta;
 		if (newProgress < 0) newProgress = 0;
-		play(filename, (long) (newProgress * 1000));
+		play(song, (long) (newProgress * 1000));
 	}
 
 }
