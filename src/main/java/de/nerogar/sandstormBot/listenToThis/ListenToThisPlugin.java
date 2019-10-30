@@ -7,8 +7,8 @@ import de.nerogar.sandstormBot.IPlaylistPlugin;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicMetaProvider.MusicMetaProviders;
-import de.nerogar.sandstormBot.player.PlayList;
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.PlayList;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
 

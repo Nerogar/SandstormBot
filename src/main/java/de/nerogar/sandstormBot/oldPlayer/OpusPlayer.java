@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.player;
+package de.nerogar.sandstormBot.oldPlayer;
 
 import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;

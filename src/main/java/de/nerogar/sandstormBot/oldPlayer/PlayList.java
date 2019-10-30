@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.player;
+package de.nerogar.sandstormBot.oldPlayer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

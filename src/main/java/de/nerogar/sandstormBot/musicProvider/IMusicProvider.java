@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBot.musicProvider;
 
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 
 public interface IMusicProvider {
 

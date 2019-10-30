@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.player;
+package de.nerogar.sandstormBot.oldPlayer;
 
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonNode;

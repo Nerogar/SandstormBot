@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.player;
+package de.nerogar.sandstormBot.oldPlayer;
 
 import java.util.function.Predicate;
 

@@ -1,7 +1,7 @@
 package de.nerogar.sandstormBot;
 
-import de.nerogar.sandstormBot.player.PlayList;
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.PlayList;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 
 import java.util.Map;
 

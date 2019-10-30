@@ -7,7 +7,7 @@ import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 import net.dv8tion.jda.core.entities.Member;
 
 import java.io.File;

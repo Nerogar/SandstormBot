@@ -2,7 +2,7 @@ package de.nerogar.sandstormBot.musicProvider;
 
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 
 import java.io.IOException;
 import java.nio.file.Files;

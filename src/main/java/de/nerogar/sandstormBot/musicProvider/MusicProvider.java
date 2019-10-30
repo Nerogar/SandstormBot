@@ -1,8 +1,8 @@
 package de.nerogar.sandstormBot.musicProvider;
 
 import de.nerogar.sandstormBot.Main;
-import de.nerogar.sandstormBot.player.INextCache;
-import de.nerogar.sandstormBot.player.Song;
+import de.nerogar.sandstormBot.oldPlayer.INextCache;
+import de.nerogar.sandstormBot.oldPlayer.Song;
 
 public class MusicProvider extends Thread {
 

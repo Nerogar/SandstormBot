@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBot;
 
-import de.nerogar.sandstormBot.player.OpusPlayer;
+import de.nerogar.sandstormBot.oldPlayer.OpusPlayer;
 import net.dv8tion.jda.core.audio.AudioSendHandler;
 
 public class FFmpegAudioPlayerSendHandler implements AudioSendHandler {
