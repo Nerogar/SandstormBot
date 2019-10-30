@@ -20,6 +20,8 @@ public class OpusPlayer {
 	private static final String NULL_FILE              = System.getProperty("os.name").contains("win") ? "NUL" : "/dev/null";
 	private static final int    VOLUME_DETECT_DURATION = 60;
 
+	private static final int BIT_RATE = 1024*96;
+
 	private OpusPlayerEvents events;
 
 	private Process         streamProcess;
@@ -201,7 +203,7 @@ public class OpusPlayer {
 				"-hide_banner",
 				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d),
 				"-t", String.valueOf(VOLUME_DETECT_DURATION),
-				"-i", filename
+				"-i", Main.MUSIC_CACHE_DIRECTORY + filename
 		                                        ));
 
 		if (playbackSettings.filter != null) {
@@ -310,7 +312,7 @@ public class OpusPlayer {
 		streamCommand.addAll(Arrays.asList(
 				"-map", "[out]",
 				"-c:a", "libopus",
-				"-b:a", "65536",
+				"-b:a", String.valueOf(BIT_RATE),
 				"-vbr", "off",
 				"-frame_duration", "20",
 				"-compression_level", "0",

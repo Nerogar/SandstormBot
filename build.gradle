@@ -18,7 +18,7 @@ targetCompatibility = 1.8
 
 dependencies {
     // jda (discord api)
-    compile ('net.dv8tion:JDA:3.8.3_460') {
+    compile ('net.dv8tion:JDA:3.8.3_464') {
         // all audio is pre encoded with opus, we don't need the opus module
         exclude module: 'opus-java'
     }
