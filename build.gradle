@@ -1,20 +1,61 @@
+
+buildscript {
+    ext {
+        querydslVersion    = "4.1.4"
+        metaModelsSourcesDir = file("metamodels")
+    }
+}
+
 plugins {
     id 'java'
     id 'application'
     id 'distribution'
 }
-
 compileJava.options.encoding = 'UTF-8'
+
+
+configurations {
+    querydslapt
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir metaModelsSourcesDir
+        }
+    }
+}
+
+task querymodels(type: JavaCompile, group: 'build') {
+    doFirst {
+        delete metaModelsSourcesDir;
+        metaModelsSourcesDir.mkdirs();
+    }
+
+    classpath = configurations.compile + configurations.querydslapt
+    destinationDir = metaModelsSourcesDir
+
+    source = sourceSets.main.java
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "com.querydsl.apt.jpa.JPAAnnotationProcessor",
+            "-s", metaModelsSourcesDir,
+            "-encoding", "UTF-8"
+    ]
+
+}
+
 
 repositories {
     mavenCentral()
     jcenter()
 }
 
+
 group = 'de.nerogar'
 version = '1.0.0'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 13
+targetCompatibility = 13
 
 dependencies {
     // jda (discord api)
@@ -28,6 +69,9 @@ dependencies {
 
     // vorbis java
     compile group: 'org.gagravarr', name: 'vorbis-java-core', version: '0.8'
+
+    // persistance
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.28.0'
 }
 
 task createRun(type: Copy) {

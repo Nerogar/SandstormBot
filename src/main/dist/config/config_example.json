@@ -21,6 +21,8 @@
 		""
 	],
 
+	"timeZoneId": "UTC",
+
 	// Prefix for commands, spaces are not supported.
 	"commandPrefix": "!",
 
