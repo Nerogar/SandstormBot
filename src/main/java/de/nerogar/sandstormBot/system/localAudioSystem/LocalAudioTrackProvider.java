@@ -17,7 +17,7 @@ public class LocalAudioTrackProvider implements IAudioTrackProvider {
 	@Override
 	public void doCache(Song song) {
 		// TODO: implement
-		song.setAudioTrack(new FileAudioTrack(song.location));
+		song.setAudioTrack(new FileAudioTrack(song.getLocation()));
 		song.audioTrackCacheState = AudioTrackCacheState.CACHED;
 
 	}

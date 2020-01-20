@@ -22,7 +22,10 @@ public class PlaylistPanel extends MessagePanel {
 		int ENTRIES = Main.SETTINGS.playlistGuiEntries;
 		int PADDING = Main.SETTINGS.playlistGuiPadding;
 
-		IPlaylist currentPlayList = guildMain.getCurrentPlaylist();
+		IPlaylist currentPlayList = guildMain.getPlaylists().getCurrent();
+		if (currentPlayList == null) {
+			return "no playlist selected";
+		}
 		List<Song> songs = currentPlayList.getSongs();
 		Song currentPlaying = currentPlayList.getCurrentSong();
 
@@ -36,7 +39,7 @@ public class PlaylistPanel extends MessagePanel {
 
 		long duration = 0;
 		for (Song song : currentPlayList.getSongs()) {
-			duration += song.duration;
+			duration += song.getDuration();
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -55,14 +58,14 @@ public class PlaylistPanel extends MessagePanel {
 			else sb.append("  ");
 
 			sb.append("[").append(i).append("] ");
-			sb.append("[").append(formatTime(songs.get(i).duration)).append("] ");
+			sb.append("[").append(formatTime(songs.get(i).getDuration())).append("] ");
 			//if (Main.SETTINGS.debug) sb.append("[").append(songs.get(i).isCached() ? 'c' : ' ').append("] ");
-			if (songs.get(i).album != null) {
-				sb.append(songs.get(i).album).append(" - ").append(songs.get(i).title);
-			} else if (songs.get(i).artist != null) {
-				sb.append(songs.get(i).artist).append(" - ").append(songs.get(i).title);
+			if (songs.get(i).getAlbum() != null) {
+				sb.append(songs.get(i).getAlbum()).append(" - ").append(songs.get(i).getTitle());
+			} else if (songs.get(i).getArtist() != null) {
+				sb.append(songs.get(i).getArtist()).append(" - ").append(songs.get(i).getTitle());
 			} else {
-				sb.append(songs.get(i).title);
+				sb.append(songs.get(i).getTitle());
 			}
 
 			sb.append('\n');

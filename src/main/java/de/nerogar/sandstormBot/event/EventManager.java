@@ -1,5 +1,7 @@
 package de.nerogar.sandstormBot.event;
 
+import de.nerogar.sandstormBot.Logger;
+import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBotApi.event.IEvent;
 import de.nerogar.sandstormBotApi.event.IEventListener;
 

@@ -2,6 +2,7 @@ package de.nerogar.sandstormBot.opusPlayer;
 
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
+import de.nerogar.sandstormBot.persistence.entities.SongEntity;
 import de.nerogar.sandstormBotApi.opusPlayer.IAudioTrack;
 
 import java.time.Instant;
@@ -9,40 +10,37 @@ import java.time.ZoneId;
 
 public class Song {
 
-	private      IAudioTrack          audioTrack;
-	public final String               audioTrackProviderName;
-	public final String               location;
-	public       AudioTrackCacheState audioTrackCacheState;
+	private IAudioTrack          audioTrack;
+	public  AudioTrackCacheState audioTrackCacheState;
 
-	public final String title;
-	public final String artist;
-	public final String album;
-	public final long   duration;
-	public final String query;
-	public final String user;
+	private SongEntity songEntity;
 
-	public int     playCount;
-	public Instant lastPlayed;
-
-	public Song(String audioTrackProviderName, String location, String title, String artist, String album, long duration, String query, String user, int playCount, Instant lastPlayed) {
-		this(audioTrackProviderName, location, title, artist, album, duration, query, user);
-
-		this.playCount = playCount;
-		this.lastPlayed = lastPlayed;
+	public Song(SongEntity songEntity) {
+		this.songEntity = songEntity;
+		audioTrackCacheState = AudioTrackCacheState.NONE;
 	}
 
 	public Song(String audioTrackProviderName, String location, String title, String artist, String album, long duration, String query, String user) {
-		this.audioTrackProviderName = audioTrackProviderName;
-		this.location = location;
-		audioTrackCacheState = AudioTrackCacheState.NONE;
-
-		this.title = title;
-		this.artist = artist;
-		this.album = album;
-		this.duration = duration;
-		this.query = query;
-		this.user = user;
+		this(new SongEntity(audioTrackProviderName, location, title, artist, album, duration, query, user, 0, Instant.MIN));
 	}
+
+	public SongEntity getSongEntity()         { return songEntity; }
+
+	public String getAudioTrackProviderName() {return songEntity.audioTrackProviderName;}
+
+	public String getLocation()               {return songEntity.location;}
+
+	public String getTitle()                  {return songEntity.title;}
+
+	public String getArtist()                 {return songEntity.artist;}
+
+	public String getAlbum()                  {return songEntity.album;}
+
+	public long getDuration()                 {return songEntity.duration;}
+
+	public String getQuery()                  {return songEntity.query;}
+
+	public String getUser()                   {return songEntity.user;}
 
 	public void setAudioTrack(IAudioTrack audioTrack) {
 		this.audioTrack = audioTrack;
@@ -53,36 +51,36 @@ public class Song {
 	}
 
 	public void incrementPlayCount() {
-		playCount++;
+		songEntity.playCount++;
 	}
 
 	public int getPlayCount() {
-		return playCount;
+		return songEntity.playCount;
 	}
 
 	public void setLastPlayed() {
-		lastPlayed = Instant.now();
+		songEntity.lastPlayed = Instant.now();
 	}
 
 	public Instant getLastPlayed() {
-		return lastPlayed;
+		return songEntity.lastPlayed;
 	}
 
 	@Override
 	public String toString() {
 		return "Song{" +
 				"audioTrack=" + audioTrack +
-				", audioTrackProviderName='" + audioTrackProviderName + '\'' +
-				", location='" + location + '\'' +
+				", audioTrackProviderName='" + songEntity.audioTrackProviderName + '\'' +
+				", location='" + songEntity.location + '\'' +
 				", audioTrackCacheState=" + audioTrackCacheState +
-				", title='" + title + '\'' +
-				", artist='" + artist + '\'' +
-				", album='" + album + '\'' +
-				", duration=" + duration +
-				", query='" + query + '\'' +
-				", user='" + user + '\'' +
-				", playCount=" + playCount +
-				", lastPlayed=" + lastPlayed.atZone(ZoneId.of(Main.SETTINGS.timeZoneId)) +
+				", title='" + songEntity.title + '\'' +
+				", artist='" + songEntity.artist + '\'' +
+				", album='" + songEntity.album + '\'' +
+				", duration=" + songEntity.duration +
+				", query='" + songEntity.query + '\'' +
+				", user='" + songEntity.user + '\'' +
+				", playCount=" + songEntity.playCount +
+				", lastPlayed=" + songEntity.lastPlayed.atZone(ZoneId.of(Main.SETTINGS.timeZoneId)) +
 				'}';
 	}
 }

@@ -4,6 +4,6 @@ import de.nerogar.sandstormBotApi.IGuildMain;
 
 public interface ICommand {
 
-	void execute(IGuildMain guildMain);
+	ICommandResult execute(IGuildMain guildMain);
 
 }

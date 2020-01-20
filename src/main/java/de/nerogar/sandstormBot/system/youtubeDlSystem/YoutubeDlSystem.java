@@ -1,7 +1,6 @@
 package de.nerogar.sandstormBot.system.youtubeDlSystem;
 
 import de.nerogar.sandstormBot.event.EventManager;
-import de.nerogar.sandstormBot.system.localAudioSystem.LocalAudioTrackProvider;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.system.ISystem;
 

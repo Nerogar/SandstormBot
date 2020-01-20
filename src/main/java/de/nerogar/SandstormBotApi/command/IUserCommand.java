@@ -12,4 +12,5 @@ public interface IUserCommand extends ICommand {
 
 	void setCommandString(VoiceChannel voiceChannel, Member member, String command, String[] commandSplit);
 
+	IUserCommand newInstance();
 }

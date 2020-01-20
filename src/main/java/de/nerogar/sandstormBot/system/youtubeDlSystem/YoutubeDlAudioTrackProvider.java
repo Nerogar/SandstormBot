@@ -52,21 +52,26 @@ public class YoutubeDlAudioTrackProvider implements IAudioTrackProvider {
 
 	@Override
 	public void doCache(Song song) {
-		try {
-			// youtube-dl --format 'bestaudio/worst' --output "%(id)s.m4a" query
-
-			String[] downloadCommand = {
-					Main.SETTINGS.youtubDlCommand,
-					"--format", "bestaudio/worst",
-					"--output", MUSIC_DOWNLOAD_DIRECTORY + getSongId(song.location),
-					song.location
-			};
-			String s = ProcessHelper.executeBlocking(downloadCommand, false, false);
-			Files.move(Paths.get(MUSIC_DOWNLOAD_DIRECTORY + getSongId(song.location)), Paths.get(MUSIC_CACHE_DIRECTORY + getSongId(song.location)), StandardCopyOption.ATOMIC_MOVE);
-			song.setAudioTrack(new FileAudioTrack(MUSIC_CACHE_DIRECTORY + getSongId(song.location)));
+		if (Files.exists(Paths.get(MUSIC_CACHE_DIRECTORY + getSongId(song.getLocation())))) {
+			song.setAudioTrack(new FileAudioTrack(MUSIC_CACHE_DIRECTORY + getSongId(song.getLocation())));
 			song.audioTrackCacheState = AudioTrackCacheState.CACHED;
-		} catch (IOException e) {
-			e.printStackTrace(Main.LOGGER.getWarningStream());
+		} else {
+			try {
+				// youtube-dl --format 'bestaudio/worst' --output "%(id)s.m4a" query
+
+				String[] downloadCommand = {
+						Main.SETTINGS.youtubDlCommand,
+						"--format", "bestaudio/worst",
+						"--output", MUSIC_DOWNLOAD_DIRECTORY + getSongId(song.getLocation()),
+						song.getLocation()
+				};
+				String s = ProcessHelper.executeBlocking(downloadCommand, false, false);
+				Files.move(Paths.get(MUSIC_DOWNLOAD_DIRECTORY + getSongId(song.getLocation())), Paths.get(MUSIC_CACHE_DIRECTORY + getSongId(song.getLocation())), StandardCopyOption.ATOMIC_MOVE);
+				song.setAudioTrack(new FileAudioTrack(MUSIC_CACHE_DIRECTORY + getSongId(song.getLocation())));
+				song.audioTrackCacheState = AudioTrackCacheState.CACHED;
+			} catch (IOException e) {
+				e.printStackTrace(Main.LOGGER.getWarningStream());
+			}
 		}
 	}
 }

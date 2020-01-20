@@ -1,6 +1,7 @@
 package de.nerogar.sandstormBotApi.opusPlayer;
 
 import de.nerogar.sandstormBot.opusPlayer.PlayerState;
+import de.nerogar.sandstormBotApi.playlist.IReadablePlaylist;
 
 public interface IOpusPlayer {
 
@@ -20,13 +21,6 @@ public interface IOpusPlayer {
 	byte[] provide20MsFrame();
 
 	/**
-	 * Sets the track current audio track provider
-	 *
-	 * @param trackProvider the track provider
-	 */
-	void setSongProvider(ISongProvider trackProvider);
-
-	/**
 	 * Returns the current playback state of this player.
 	 *
 	 * @return the current player state
@@ -35,8 +29,10 @@ public interface IOpusPlayer {
 
 	/**
 	 * Sets the player in the playing state.
+	 *
+	 * @param forceRestart indicates if the current song should be restarted, even if it is already playing
 	 */
-	void play();
+	void play(boolean forceRestart);
 
 	/**
 	 * Sets the player in the paused state.

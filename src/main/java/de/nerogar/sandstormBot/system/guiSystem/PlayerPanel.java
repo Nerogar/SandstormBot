@@ -19,7 +19,7 @@ public class PlayerPanel extends MessagePanel {
 	protected String render() {
 		StringBuilder sb = new StringBuilder();
 
-		IPlaylist currentPlaylist = guildMain.getCurrentPlaylist();
+		IPlaylist currentPlaylist = guildMain.getPlaylists().getCurrent();
 		Song currentSong = null;
 		if (currentPlaylist != null) {
 			currentSong = currentPlaylist.getCurrentSong();
@@ -35,21 +35,24 @@ public class PlayerPanel extends MessagePanel {
 				sb.append("▶ ");
 			}
 
-			if (currentSong.album != null) {
-				sb.append(currentSong.album).append(" - ").append(currentSong.title);
-			} else if (currentSong.artist != null) {
-				sb.append(currentSong.artist).append(" - ").append(currentSong.title);
+			if (currentSong.getAlbum() != null) {
+				sb.append(currentSong.getAlbum()).append(" - ").append(currentSong.getTitle());
+			} else if (currentSong.getArtist() != null) {
+				sb.append(currentSong.getArtist()).append(" - ").append(currentSong.getTitle());
 			} else {
-				sb.append(currentSong.title);
+				sb.append(currentSong.getTitle());
 			}
 
 			sb.append('\n');
 
-			sb.append(currentSong.query).append(" (").append(currentSong.user).append(")");
+			sb.append(currentSong.getQuery()).append(" (").append(currentSong.getUser()).append(")");
+			sb.append('\n');
+
+			sb.append(currentSong.getLocation());
 			sb.append('\n');
 
 			long position = guildMain.getPlayer().getCurrentTrackProgress();
-			long duration = currentSong.duration;
+			long duration = currentSong.getDuration();
 			int progress = (int) Math.round(((double) position / duration) * 26);
 			String progressString = formatTime(position) + "/" + formatTime(duration);
 

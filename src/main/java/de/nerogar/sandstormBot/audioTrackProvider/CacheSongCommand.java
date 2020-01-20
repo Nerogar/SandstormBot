@@ -3,7 +3,9 @@ package de.nerogar.sandstormBot.audioTrackProvider;
 import de.nerogar.sandstormBot.event.events.SongCacheStateChangeEvent;
 import de.nerogar.sandstormBot.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommand;
+import de.nerogar.sandstormBotApi.command.ICommandResult;
 
 public class CacheSongCommand implements ICommand {
 
@@ -14,10 +16,11 @@ public class CacheSongCommand implements ICommand {
 	}
 
 	@Override
-	public void execute(IGuildMain guildMain) {
+	public ICommandResult execute(IGuildMain guildMain) {
 		// TODO: do this on another thread
-		guildMain.getAudioTrackProviders().getAudioTrackProvider(song.audioTrackProviderName).doCache(song);
+		guildMain.getAudioTrackProviders().getAudioTrackProvider(song.getAudioTrackProviderName()).doCache(song);
 		guildMain.getEventManager().trigger(new SongCacheStateChangeEvent(song));
+		return CommandResults.success();
 	}
 
 }

@@ -2,6 +2,8 @@ package de.nerogar.sandstormBot.system.youtubeDlSystem;
 
 import de.nerogar.sandstormBot.UserGroup;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.command.CommandResults;
+import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -31,7 +33,13 @@ public class AddCommand implements IUserCommand {
 	}
 
 	@Override
-	public void execute(IGuildMain guildMain) {
+	public IUserCommand newInstance() {
+		return new AddCommand();
+	}
+
+	@Override
+	public ICommandResult execute(IGuildMain guildMain) {
 		guildMain.getCommandQueue().add(new YoutubeDlCommand(command.substring("add".length()).strip(), member));
+		return CommandResults.success();
 	}
 }

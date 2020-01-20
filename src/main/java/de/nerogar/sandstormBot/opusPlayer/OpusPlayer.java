@@ -5,14 +5,15 @@ import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
 import de.nerogar.sandstormBot.audioTrackProvider.CacheSongCommand;
 import de.nerogar.sandstormBot.event.EventManager;
+import de.nerogar.sandstormBot.event.events.PlaylistChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongCacheStateChangeEvent;
+import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongChangeEvent;
-import de.nerogar.sandstormBot.event.events.SongProviderChangeEvent;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.opusPlayer.IOpusPlayer;
-import de.nerogar.sandstormBotApi.opusPlayer.ISongProvider;
+import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
-import static de.nerogar.sandstormBot.opusPlayer.PlayerState.WAITING_FOR_CACHE;
+import static de.nerogar.sandstormBot.opusPlayer.PlayerState.*;
 
 public class OpusPlayer implements IOpusPlayer {
 
@@ -22,45 +23,51 @@ public class OpusPlayer implements IOpusPlayer {
 	private OpusAudioConverter opusAudioConverter;
 	private PlayerState        playerState;
 
-	private ISongProvider songProvider;
-	private Song          currentSong;
-	private long          currentTrackProgress;
+	private IPlaylist playlist;
+	private Song      currentSong;
+	private long      currentTrackProgress;
 
 	public OpusPlayer(EventManager eventManager, IGuildMain guildMain) {
 		this.eventManager = eventManager;
 		this.guildMain = guildMain;
 
-		playerState = PlayerState.STOPPED;
+		setPlayerState(PlayerState.STOPPED);
 		opusAudioConverter = new OpusAudioConverter();
 
-		eventManager.register(SongProviderChangeEvent.class, this::onSongProviderChange);
+		eventManager.register(PlaylistChangeCurrentEvent.class, this::onPlaylistChangeCurrent);
+		eventManager.register(SongChangeCurrentEvent.class, this::onSongChangeCurrent);
 		eventManager.register(SongCacheStateChangeEvent.class, this::onSongCacheStateChange);
+	}
+
+	private void setPlayerState(PlayerState playerState) {
+		this.playerState = playerState;
+		Main.LOGGER.log(Logger.DEBUG, "playerState: " + playerState);
 	}
 
 	@Override
 	public boolean canProvideFrame() {
-		return songProvider != null && songProvider.getCurrentSong() != null && playerState == PlayerState.PLAYING;
+		if (opusAudioConverter.needsNextInputStream()) {
+			if (playlist != null) {
+				if (playerState == PLAYING) {
+					setPlayerState(WAITING_FOR_NEXT_SONG);
+					playlist.next();
+				} else if (playerState == WAITING_FOR_CACHE) {
+					play(false);
+				}
+			}
+		} else {
+			if (playerState == WAITING_FOR_SONG_TO_START) {
+				setPlayerState(PLAYING);
+			}
+		}
+		return playlist != null && playlist.getCurrentSong() != null && playerState == PlayerState.PLAYING;
 	}
 
 	@Override
 	public byte[] provide20MsFrame() {
-		if (opusAudioConverter.needsNextInputStream()) {
-			if (songProvider != null) songProvider.next();
-		}
-
-		eventManager.trigger(new SongChangeEvent());
+		eventManager.trigger(new SongChangeEvent(currentSong));
 		currentTrackProgress += 20;
 		return opusAudioConverter.get20MsOpusFrame();
-	}
-
-	@Override
-	public void setSongProvider(ISongProvider trackProvider) {
-		boolean playing = playerState == PlayerState.PLAYING;
-		this.songProvider = trackProvider;
-
-		if (playing) {
-			play();
-		}
 	}
 
 	@Override
@@ -69,56 +76,61 @@ public class OpusPlayer implements IOpusPlayer {
 	}
 
 	@Override
-	public void play() {
+	public void play(boolean forceRestart) {
 		Main.LOGGER.log(Logger.DEBUG, "OpusPlayer.play");
-		if (songProvider != null && songProvider.getCurrentSong() != null) {
-			if (songProvider.getCurrentSong() != currentSong) {
+		if (playlist != null && playlist.getCurrentSong() != null) {
+			if (playerState == PLAYING && (playlist.getCurrentSong() != currentSong || forceRestart)) {
 				stop();
 			}
 
-			if (playerState == PlayerState.STOPPED) {
-				if (songProvider.getCurrentSong().audioTrackCacheState == AudioTrackCacheState.NONE) {
-					playerState = WAITING_FOR_CACHE;
-					guildMain.getCommandQueue().add(new CacheSongCommand(songProvider.getCurrentSong()));
+			if (playerState == PlayerState.STOPPED || playerState == WAITING_FOR_NEXT_SONG) {
+				if (playlist.getCurrentSong().audioTrackCacheState == AudioTrackCacheState.NONE) {
+					setPlayerState(WAITING_FOR_CACHE);
+					guildMain.getCommandQueue().add(new CacheSongCommand(playlist.getCurrentSong()));
 				} else {
-					songProvider.getCurrentSong().getAudioTrack().start();
-					opusAudioConverter.setInputStream(songProvider.getCurrentSong().getAudioTrack().getInputStream());
+					playlist.getCurrentSong().getAudioTrack().start();
+					opusAudioConverter.setInputStream(playlist.getCurrentSong().getAudioTrack().getInputStream());
 					currentTrackProgress = 0;
-					playerState = PlayerState.PLAYING;
+					setPlayerState(PlayerState.WAITING_FOR_SONG_TO_START);
 				}
 			} else if (playerState == PlayerState.PAUSED) {
-				playerState = PlayerState.PLAYING;
+				setPlayerState(PlayerState.PLAYING);
 			} else if (playerState == WAITING_FOR_CACHE) {
-				songProvider.getCurrentSong().getAudioTrack().start();
-				opusAudioConverter.setInputStream(songProvider.getCurrentSong().getAudioTrack().getInputStream());
-				currentTrackProgress = 0;
-				playerState = PlayerState.PLAYING;
+				if (currentSong.audioTrackCacheState == AudioTrackCacheState.CACHED) {
+					playlist.getCurrentSong().getAudioTrack().start();
+					opusAudioConverter.setInputStream(playlist.getCurrentSong().getAudioTrack().getInputStream());
+					currentTrackProgress = 0;
+					setPlayerState(PlayerState.WAITING_FOR_SONG_TO_START);
+				}
 			}
-			currentSong = songProvider.getCurrentSong();
+			currentSong = playlist.getCurrentSong();
+			//eventManager.trigger(new SongChangeEvent(currentSong));
 		} else {
 			currentSong = null;
 		}
-		eventManager.trigger(new SongChangeEvent());
 	}
 
 	@Override
 	public void pause() {
 		if (playerState == PlayerState.PLAYING) {
-			playerState = PlayerState.PAUSED;
+			setPlayerState(PlayerState.PAUSED);
 		}
 	}
 
 	@Override
 	public void stop() {
 		Main.LOGGER.log(Logger.DEBUG, "OpusPlayer.stop");
-		playerState = PlayerState.STOPPED;
+		setPlayerState(PlayerState.STOPPED);
 
 		if (currentSong != null) {
 			currentSong.getAudioTrack().stop();
 		}
 
+		Song oldSong = this.currentSong;
 		currentSong = null;
-		eventManager.trigger(new SongChangeEvent());
+		if (oldSong != null) {
+			eventManager.trigger(new SongChangeEvent(oldSong));
+		}
 	}
 
 	@Override
@@ -143,10 +155,10 @@ public class OpusPlayer implements IOpusPlayer {
 
 	@Override
 	public void seek(long position) {
-		if (songProvider != null && songProvider.getCurrentSong() != null) {
-			if (songProvider.getCurrentSong().getAudioTrack().seek(position)) {
+		if (playlist != null && playlist.getCurrentSong() != null) {
+			if (playlist.getCurrentSong().getAudioTrack().seek(position)) {
 				currentTrackProgress = position;
-				play();
+				play(true);
 			}
 		}
 	}
@@ -157,15 +169,22 @@ public class OpusPlayer implements IOpusPlayer {
 		seek(position);
 	}
 
-	private void onSongProviderChange(SongProviderChangeEvent event) {
-		if (event.oldSong != event.newSong || event.forceSongRestart) {
-			play();
+	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {
+		boolean playing = playerState == PlayerState.PLAYING;
+		this.playlist = event.newPlaylist;
+
+		if (playing) {
+			play(true);
 		}
+	}
+
+	private void onSongChangeCurrent(SongChangeCurrentEvent event) {
+		play(true);
 	}
 
 	private void onSongCacheStateChange(SongCacheStateChangeEvent event) {
 		if (event.song == currentSong && playerState == WAITING_FOR_CACHE && event.song.audioTrackCacheState == AudioTrackCacheState.CACHED) {
-			play();
+			play(true);
 		}
 	}
 

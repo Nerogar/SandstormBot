@@ -1,11 +1,10 @@
 package de.nerogar.sandstormBotApi.playlist;
 
 import de.nerogar.sandstormBot.opusPlayer.Song;
-import de.nerogar.sandstormBotApi.opusPlayer.ISongProvider;
 
 import java.util.List;
 
-public interface IPlaylist extends ISongProvider {
+public interface IPlaylist extends IReadablePlaylist, IModifiablePlaylist {
 
 	String getName();
 

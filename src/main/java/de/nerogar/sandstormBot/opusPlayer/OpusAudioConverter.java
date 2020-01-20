@@ -69,7 +69,7 @@ public class OpusAudioConverter {
 	}
 
 	public boolean needsNextInputStream() {
-		return inputStream.endOfBaseReached;
+		return inputStream.baseReadStarted && inputStream.endOfBaseReached;
 	}
 
 	private class OpusPacketReaderThread extends Thread {
@@ -121,14 +121,16 @@ public class OpusAudioConverter {
 
 		private int     writingZeroSample;
 		private boolean endOfBaseReached = false;
+		private boolean baseReadStarted  = false;
 
-		public void setBase(InputStream base) {
+		public synchronized void setBase(InputStream base) {
 			this.base = base;
 			endOfBaseReached = false;
+			baseReadStarted = false;
 		}
 
 		@Override
-		public int read() throws IOException {
+		public synchronized int read() throws IOException {
 			if (writingZeroSample > 0) {
 				writingZeroSample--;
 				return 0;
@@ -144,6 +146,7 @@ public class OpusAudioConverter {
 				endOfBaseReached = true;
 				return 0;
 			} else {
+				baseReadStarted = true;
 				return baseByte;
 			}
 		}

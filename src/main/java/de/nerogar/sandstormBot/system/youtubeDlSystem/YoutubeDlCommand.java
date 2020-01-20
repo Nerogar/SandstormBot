@@ -7,8 +7,9 @@ import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommand;
-import de.nerogar.sandstormBotApi.playlist.IModifiablePlaylist;
+import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 import net.dv8tion.jda.core.entities.Member;
 
@@ -244,21 +245,19 @@ public class YoutubeDlCommand implements ICommand {
 	}
 
 	@Override
-	public void execute(IGuildMain guildMain) {
+	public ICommandResult execute(IGuildMain guildMain) {
 		List<String> predictedSongLocations = getPredictedSongLocations();
 
 		for (String predictedSongLocation : predictedSongLocations) {
 			Main.LOGGER.log(Logger.DEBUG, predictedSongLocation);
 
-			IPlaylist currentPlaylist = guildMain.getCurrentPlaylist();
-			IModifiablePlaylist modifiablePlaylist = (IModifiablePlaylist) currentPlaylist;
-
-			//modifiablePlaylist.add(new Song(YoutubeDlAudioTrackProvider.NAME, predictedSongLocation, "", "", "", 0, "", ""));
+			IPlaylist currentPlaylist = guildMain.getPlaylists().getCurrent();
 
 			List<Song> songs = getSongs(predictedSongLocations);
-			modifiablePlaylist.add(songs);
+			currentPlaylist.addAll(songs);
 		}
 
+		return CommandResults.success();
 	}
 
 }

@@ -27,6 +27,7 @@ public class UserCommands {
 		userCommands.add(new PauseCommand());
 		userCommands.add(new NextCommand());
 		userCommands.add(new PreviousCommand());
+		userCommands.add(new PlaylistCommand());
 	}
 
 	private UserGroup getUserGroup(Member member) {
@@ -72,14 +73,23 @@ public class UserCommands {
 	public void execute(Member member, String command) {
 		String[] commandSplit = command.split("\\s+");
 
-		for (IUserCommand userCommand : userCommands) {
-			if (userCommand.accepts(command, commandSplit)
-					&& getUserGroup(member).permissionLevel >= userCommand.getMinUserGroup().permissionLevel) {
-				// TODO: clone the command, otherwise it is not possible to have multiple copies of the same command in the queue
-				userCommand.setCommandString(member.getVoiceState().getChannel(), member, command, commandSplit);
-				guildMain.getCommandQueue().add(userCommand);
+		IUserCommand userCommand = null;
+
+		for (IUserCommand c : userCommands) {
+			if (c.accepts(command, commandSplit) && getUserGroup(member).permissionLevel >= c.getMinUserGroup().permissionLevel) {
+				userCommand = c.newInstance();
+				break;
 			}
 		}
+
+		if (userCommand == null) {
+			userCommand = new UnknownCommand();
+		}
+
+		// TODO: clone the command, otherwise it is not possible to have multiple copies of the same command in the queue
+		userCommand.setCommandString(member.getVoiceState().getChannel(), member, command, commandSplit);
+		guildMain.getCommandQueue().add(userCommand);
+
 	}
 
 }

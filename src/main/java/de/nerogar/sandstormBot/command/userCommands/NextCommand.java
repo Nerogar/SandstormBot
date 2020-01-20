@@ -2,6 +2,8 @@ package de.nerogar.sandstormBot.command.userCommands;
 
 import de.nerogar.sandstormBot.UserGroup;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.command.CommandResults;
+import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -24,7 +26,13 @@ public class NextCommand implements IUserCommand {
 	}
 
 	@Override
-	public void execute(IGuildMain guildMain) {
-		guildMain.getCurrentPlaylist().next();
+	public IUserCommand newInstance() {
+		return new NextCommand();
+	}
+
+	@Override
+	public ICommandResult execute(IGuildMain guildMain) {
+		guildMain.getPlaylists().getCurrent().next();
+		return CommandResults.success();
 	}
 }

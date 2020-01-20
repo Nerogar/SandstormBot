@@ -7,7 +7,7 @@ import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.gui.Gui;
 import de.nerogar.sandstormBotApi.command.ICommand;
 import de.nerogar.sandstormBotApi.opusPlayer.IOpusPlayer;
-import de.nerogar.sandstormBotApi.playlist.IPlaylist;
+import de.nerogar.sandstormBotApi.playlist.IPlaylists;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
@@ -30,11 +30,13 @@ public interface IGuildMain {
 
 	IOpusPlayer getPlayer();
 
-	List<IPlaylist> getPlaylists();
-
-	IPlaylist getCurrentPlaylist();
+	IPlaylists getPlaylists();
 
 	UserCommands getUserCommands();
 
 	AudioTrackProviders getAudioTrackProviders();
+
+	List<String> getLog();
+
+	void log(String message);
 }

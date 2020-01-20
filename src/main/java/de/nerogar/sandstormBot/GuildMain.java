@@ -5,16 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackProviders;
 import de.nerogar.sandstormBot.command.UserCommands;
 import de.nerogar.sandstormBot.event.EventManager;
+import de.nerogar.sandstormBot.event.events.GuildLogEvent;
 import de.nerogar.sandstormBot.gui.Gui;
 import de.nerogar.sandstormBot.opusPlayer.OpusPlayer;
-import de.nerogar.sandstormBot.opusPlayer.Song;
-import de.nerogar.sandstormBot.playlist.DefaultPlaylist;
+import de.nerogar.sandstormBot.playlist.Playlists;
 import de.nerogar.sandstormBot.system.guiSystem.GuiSystem;
 import de.nerogar.sandstormBot.system.localAudioSystem.LocalAudioSystem;
-import de.nerogar.sandstormBot.system.localAudioSystem.LocalAudioTrackProvider;
+import de.nerogar.sandstormBot.system.persistence.PersistenceSystem;
 import de.nerogar.sandstormBot.system.youtubeDlSystem.YoutubeDlSystem;
+import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommand;
-import de.nerogar.sandstormBotApi.playlist.IPlaylist;
+import de.nerogar.sandstormBotApi.command.ICommandResult;
+import de.nerogar.sandstormBotApi.playlist.IPlaylists;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
@@ -22,11 +25,12 @@ import net.dv8tion.jda.core.managers.AudioManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGuildMain {
+public class GuildMain extends Thread implements IGuildMain {
 
 	private GuildSettings settings;
 
@@ -39,9 +43,10 @@ public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGui
 
 	private AudioTrackProviders audioTrackProviders;
 
-	private Gui             gui;
-	private List<IPlaylist> playlists;
-	private OpusPlayer      player;
+	private Gui          gui;
+	private List<String> log;
+	private Playlists    playlists;
+	private OpusPlayer   player;
 
 	public GuildMain(Guild guild) {
 		setDaemon(true);
@@ -66,18 +71,14 @@ public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGui
 		audioTrackProviders = new AudioTrackProviders(this);
 
 		gui = new Gui(eventManager);
-		playlists = new ArrayList<>();
+		log = new ArrayList<>();
+		playlists = new Playlists(eventManager, this);
 		player = new OpusPlayer(eventManager, this);
 
 		debugStart();
 	}
 
 	private void debugStart() {
-		DefaultPlaylist playlist = new DefaultPlaylist(eventManager, "debug");
-		playlists.add(playlist);
-
-		player.setSongProvider(playlist);
-
 		GuiSystem guiSystem = new GuiSystem();
 		guiSystem.init(eventManager, this);
 
@@ -86,6 +87,9 @@ public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGui
 
 		YoutubeDlSystem youtubeDlSystem = new YoutubeDlSystem();
 		youtubeDlSystem.init(eventManager, this);
+
+		PersistenceSystem persistenceSystem = new PersistenceSystem();
+		persistenceSystem.init(eventManager, this);
 	}
 
 	@Override
@@ -130,13 +134,8 @@ public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGui
 	}
 
 	@Override
-	public List<IPlaylist> getPlaylists() {
+	public IPlaylists getPlaylists() {
 		return playlists;
-	}
-
-	@Override
-	public IPlaylist getCurrentPlaylist() {
-		return playlists.get(0);
 	}
 
 	@Override
@@ -150,19 +149,38 @@ public class GuildMain extends Thread implements de.nerogar.sandstormBotApi.IGui
 	}
 
 	@Override
+	public List<String> getLog() {
+		return Collections.unmodifiableList(log);
+	}
+
+	@Override
+	public void log(String message) {
+		log.add(message);
+		if (log.size() > 10) log.remove(0);
+		eventManager.trigger(new GuildLogEvent(message));
+	}
+
+	@Override
 	public void run() {
 		while (true) {
 			ICommand command;
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
+				e.printStackTrace(Main.LOGGER.getErrorStream());
 				continue;
 			}
 
+			ICommandResult commandResult;
 			try {
-				command.execute(this);
+				commandResult = command.execute(this);
 			} catch (Exception e) {
 				e.printStackTrace(Main.LOGGER.getErrorStream());
+				commandResult = CommandResults.exception(command, e);
+			}
+
+			if (!commandResult.success()) {
+				log(commandResult.commandFeedback());
 			}
 		}
 	}

@@ -7,6 +7,7 @@ public abstract class MessagePanel {
 
 	private Message message;
 	private boolean isDirty;
+	private long    lastUpdate;
 
 	public MessagePanel(TextChannel uiChannel) {
 		message = uiChannel.sendMessage("``` ```").complete();
@@ -24,6 +25,7 @@ public abstract class MessagePanel {
 			String message = render();
 			String messageString = message.substring(0, Math.min(1800, message.length()));
 			this.message.editMessage("```" + messageString + "```").queue();
+			lastUpdate = System.currentTimeMillis();
 		}
 		isDirty = false;
 	}
