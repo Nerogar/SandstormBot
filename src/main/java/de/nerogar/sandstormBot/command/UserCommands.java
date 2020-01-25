@@ -26,6 +26,7 @@ public class UserCommands {
 		userCommands.add(new PlayCommand());
 		userCommands.add(new PauseCommand());
 		userCommands.add(new NextCommand());
+		userCommands.add(new RemoveCommand());
 		userCommands.add(new PreviousCommand());
 		userCommands.add(new PlaylistCommand());
 	}
@@ -86,7 +87,6 @@ public class UserCommands {
 			userCommand = new UnknownCommand();
 		}
 
-		// TODO: clone the command, otherwise it is not possible to have multiple copies of the same command in the queue
 		userCommand.setCommandString(member.getVoiceState().getChannel(), member, command, commandSplit);
 		guildMain.getCommandQueue().add(userCommand);
 

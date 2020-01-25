@@ -116,4 +116,14 @@ public class DatabaseTable<T extends PersistenceEntity> {
 			Main.LOGGER.log(Logger.ERROR, "Could not insert entity: " + entity);
 		}
 	}
+
+	public void delete(T entity) {
+		final String deleteStatement = "DELETE FROM " + tableName + " WHERE [" + entity.getIdColumnName() + "] = " + entity.getId();
+
+		try (PreparedStatement preparedStatement = database.getConnection().prepareStatement(deleteStatement)) {
+			preparedStatement.execute();
+		} catch (SQLException e) {
+			Main.LOGGER.log(Logger.ERROR, "Could not delete entity: " + entity);
+		}
+	}
 }

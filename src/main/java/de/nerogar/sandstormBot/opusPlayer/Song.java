@@ -24,7 +24,7 @@ public class Song {
 		this(new SongEntity(audioTrackProviderName, location, title, artist, album, duration, query, user, 0, Instant.MIN));
 	}
 
-	public SongEntity getSongEntity()         { return songEntity; }
+	public SongEntity getSongEntity()         {return songEntity;}
 
 	public String getAudioTrackProviderName() {return songEntity.audioTrackProviderName;}
 
@@ -41,6 +41,16 @@ public class Song {
 	public String getQuery()                  {return songEntity.query;}
 
 	public String getUser()                   {return songEntity.user;}
+
+	public String getFormattedName(){
+		if (getAlbum() != null) {
+			return getAlbum() + " - " + getTitle();
+		} else if (getArtist() != null) {
+			return getArtist() + " - " + getTitle();
+		} else {
+			return getTitle();
+		}
+	}
 
 	public void setAudioTrack(IAudioTrack audioTrack) {
 		this.audioTrack = audioTrack;

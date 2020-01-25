@@ -4,6 +4,7 @@ import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.event.events.PlaylistAddEvent;
 import de.nerogar.sandstormBot.event.events.SongAddEvent;
+import de.nerogar.sandstormBot.event.events.SongRemoveEvent;
 import de.nerogar.sandstormBot.opusPlayer.Song;
 import de.nerogar.sandstormBot.persistence.Database;
 import de.nerogar.sandstormBot.persistence.DatabaseTable;
@@ -44,7 +45,10 @@ public class PersistenceSystem implements ISystem {
 
 		loadSongs();
 
+		eventManager.register(PlaylistAddEvent.class, this::onPlaylistAdd);
+
 		eventManager.register(SongAddEvent.class, this::onSongAdd);
+		eventManager.register(SongRemoveEvent.class, this::onSongRemove);
 	}
 
 	private void loadSongs() {
@@ -72,6 +76,10 @@ public class PersistenceSystem implements ISystem {
 
 	private void onSongAdd(SongAddEvent event) {
 		songTable.insert(event.song.getSongEntity());
+	}
+
+	private void onSongRemove(SongRemoveEvent event) {
+		songTable.delete(event.song.getSongEntity());
 	}
 
 }

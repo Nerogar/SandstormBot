@@ -12,7 +12,6 @@ import de.nerogar.sandstormBotApi.playlist.IModifiablePlaylist;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
@@ -176,7 +175,14 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		}
 	}
 
-	public int remove(Predicate<Song> predicate) {
+	@Override
+	public void remove(Song song) {
+		Song currentSong = getCurrentSong();
+		removeAll((s, index, invocation) -> s == currentSong);
+	}
+
+	@Override
+	public int removeAll(ISongPredicate predicate) {
 		Song oldSong = getCurrentSong();
 
 		int removed = 0;

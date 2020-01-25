@@ -23,5 +23,5 @@ create table DefaultPlaylist
     "CurrentPosition"   integer not null
 );
 
-insert into DefaultPlaylist ([PlaylistId], Name, "Order", CurrentPosition)
+insert into DefaultPlaylist ("PlaylistId", "Name", "Order", "CurrentPosition")
 VALUES (0, 'default playlist', 'DEFAULT', -1);

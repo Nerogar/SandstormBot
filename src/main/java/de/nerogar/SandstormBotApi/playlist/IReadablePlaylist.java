@@ -1,7 +1,6 @@
 package de.nerogar.sandstormBotApi.playlist;
 
 import de.nerogar.sandstormBot.opusPlayer.Song;
-import de.nerogar.sandstormBotApi.opusPlayer.ISongPredicate;
 
 public interface IReadablePlaylist {
 

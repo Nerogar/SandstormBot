@@ -41,7 +41,6 @@ public class OpusPlayer implements IOpusPlayer {
 
 	private void setPlayerState(PlayerState playerState) {
 		this.playerState = playerState;
-		Main.LOGGER.log(Logger.DEBUG, "playerState: " + playerState);
 	}
 
 	@Override
@@ -77,7 +76,6 @@ public class OpusPlayer implements IOpusPlayer {
 
 	@Override
 	public void play(boolean forceRestart) {
-		Main.LOGGER.log(Logger.DEBUG, "OpusPlayer.play");
 		if (playlist != null && playlist.getCurrentSong() != null) {
 			if (playerState == PLAYING && (playlist.getCurrentSong() != currentSong || forceRestart)) {
 				stop();
@@ -104,7 +102,6 @@ public class OpusPlayer implements IOpusPlayer {
 				}
 			}
 			currentSong = playlist.getCurrentSong();
-			//eventManager.trigger(new SongChangeEvent(currentSong));
 		} else {
 			currentSong = null;
 		}
@@ -119,7 +116,6 @@ public class OpusPlayer implements IOpusPlayer {
 
 	@Override
 	public void stop() {
-		Main.LOGGER.log(Logger.DEBUG, "OpusPlayer.stop");
 		setPlayerState(PlayerState.STOPPED);
 
 		if (currentSong != null) {
