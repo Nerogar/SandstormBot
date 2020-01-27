@@ -36,15 +36,15 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 	private int[] nextArray;
 	private int[] previousArray;
 
-	public DefaultPlaylist(EventManager eventManager, DefaultPlaylistEntity defaultPlaylistEntity) {
+	public DefaultPlaylist(EventManager eventManager, DefaultPlaylistEntity defaultPlaylistEntity, List<Song> songs) {
 		this.eventManager = eventManager;
 		this.defaultPlaylistEntity = defaultPlaylistEntity;
 
-		songs = new ArrayList<>();
+		this.songs = new ArrayList<>(songs);
 	}
 
 	public DefaultPlaylist(EventManager eventManager, String name) {
-		this(eventManager, new DefaultPlaylistEntity(name, Order.DEFAULT, -1));
+		this(eventManager, new DefaultPlaylistEntity(name, Order.DEFAULT, -1), Collections.emptyList());
 	}
 
 	@Override

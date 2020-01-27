@@ -1,5 +1,6 @@
 package de.nerogar.sandstormBot.opusPlayer;
 
+import de.nerogar.sandstormBot.Logger;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
 import org.gagravarr.ogg.OggFile;
@@ -12,9 +13,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class OpusAudioConverter {
 
-	private Process ffmpeg;
-
+	private Process            ffmpeg;
 	private PaddingInputStream inputStream;
+	private int                samplesInFmmpeg;
 
 	private OggFile                  oggFile;
 	private OggPacketReader          packetReader;
@@ -46,29 +47,37 @@ public class OpusAudioConverter {
 		};
 
 		ffmpeg = ProcessHelper.executeStreaming(playCommand, false);
+
 		inputStream = new PaddingInputStream();
+		new StreamCopyThread(inputStream, ffmpeg.getOutputStream()).start();
 
 		oggFile = new OggFile(ffmpeg.getInputStream());
 		packetReader = oggFile.getPacketReader();
-		opusPackets = new ArrayBlockingQueue<>(10);
-
-		new StreamCopyThread(inputStream, ffmpeg.getOutputStream()).start();
+		opusPackets = new ArrayBlockingQueue<>(1);
 		new OpusPacketReaderThread().start();
 	}
 
 	public void setInputStream(InputStream inputStream) {
+		// throw away all remaining samples in the buffer
 		this.inputStream.setBase(inputStream);
+		int framesToThrowAway = samplesInFmmpeg / 960; // 960 = 48kHz * 20ms
+		Main.LOGGER.log(Logger.DEBUG, "throwing away " + framesToThrowAway + " frames");
+		for (int i = 0; i < framesToThrowAway; i++) {
+			get20MsOpusFrame();
+		}
 	}
 
-	public byte[] get20MsOpusFrame() {
+	public synchronized byte[] get20MsOpusFrame() {
 		try {
-			return opusPackets.take().getData();
+			byte[] frame = opusPackets.take().getData();
+			samplesInFmmpeg -= 960; // 960 = 48kHz * 20ms
+			return frame;
 		} catch (InterruptedException e) {
 			return null;
 		}
 	}
 
-	public boolean needsNextInputStream() {
+	public synchronized boolean needsNextInputStream() {
 		return inputStream.baseReadStarted && inputStream.endOfBaseReached;
 	}
 
@@ -97,7 +106,7 @@ public class OpusAudioConverter {
 
 		public StreamCopyThread(InputStream inputStream, OutputStream outputStream) {
 			this.inputStream = new BufferedInputStream(inputStream);
-			this.outputStream = new BufferedOutputStream(outputStream, 15360); // 48000kHz * 20ms/frame * 2 channels * 2 bytes/sample * 4 frames
+			this.outputStream = new BufferedOutputStream(outputStream, 15360); // 15360 = 48kHz * 20ms/frame * 2 channels * 2 bytes/sample * 4 frames
 			buffer = new byte[1024 * 8];
 
 			setDaemon(true);
@@ -115,10 +124,11 @@ public class OpusAudioConverter {
 		}
 	}
 
-	private static class PaddingInputStream extends InputStream {
+	private class PaddingInputStream extends InputStream {
 
 		private InputStream base;
 
+		private int     writingSample;
 		private int     writingZeroSample;
 		private boolean endOfBaseReached = false;
 		private boolean baseReadStarted  = false;
@@ -131,6 +141,12 @@ public class OpusAudioConverter {
 
 		@Override
 		public synchronized int read() throws IOException {
+			writingSample++;
+			if (writingSample == 4) {
+				writingSample = 0;
+				samplesInFmmpeg++;
+			}
+
 			if (writingZeroSample > 0) {
 				writingZeroSample--;
 				return 0;

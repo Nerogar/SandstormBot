@@ -10,6 +10,7 @@ public interface IModifiablePlaylist {
 	/**
 	 * Skips to the next song fulfilling the predicate and returns that song.
 	 *
+	 * @param predicate the predicate
 	 * @return the next song
 	 */
 	Song next(ISongPredicate predicate);
@@ -26,6 +27,7 @@ public interface IModifiablePlaylist {
 	/**
 	 * Skips to the previous song fulfilling the predicate and returns that song.
 	 *
+	 * @param predicate the predicate
 	 * @return the previous song
 	 */
 	Song previous(ISongPredicate predicate);
@@ -40,6 +42,13 @@ public interface IModifiablePlaylist {
 	}
 
 	/**
+	 * adds a song to this playlist
+	 *
+	 * @param song a song
+	 */
+	void add(Song song);
+
+	/**
 	 * adds all songs from {@code songs} to this playlist
 	 *
 	 * @param songs a list of songs
@@ -47,10 +56,18 @@ public interface IModifiablePlaylist {
 	void addAll(List<Song> songs);
 
 	/**
-	 * adds a song to this playlist
+	 * removes a song from this playlist
 	 *
 	 * @param song a song
 	 */
-	void add(Song song);
+	void remove(Song song);
+
+	/**
+	 * removes all songs fulfilling the predicate from this playlist
+	 *
+	 * @param predicate the predicate
+	 * @return the number of songs removed
+	 */
+	int removeAll(ISongPredicate predicate);
 
 }

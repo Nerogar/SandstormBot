@@ -4,6 +4,7 @@ import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.event.events.PlaylistAddEvent;
 import de.nerogar.sandstormBot.event.events.SongAddEvent;
+import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongRemoveEvent;
 import de.nerogar.sandstormBot.opusPlayer.Song;
 import de.nerogar.sandstormBot.persistence.Database;
@@ -49,21 +50,25 @@ public class PersistenceSystem implements ISystem {
 
 		eventManager.register(SongAddEvent.class, this::onSongAdd);
 		eventManager.register(SongRemoveEvent.class, this::onSongRemove);
+
+		eventManager.register(SongChangeCurrentEvent.class, this::onSongChangeCurrent);
+	}
+
+	private void onSongChangeCurrent(SongChangeCurrentEvent event) {
+		if(event.playlist instanceof DefaultPlaylist){
+			defaultPlaylistTable.update(((DefaultPlaylist) event.playlist).getDefaultPlaylistEntity());
+		}
 	}
 
 	private void loadSongs() {
 		final List<DefaultPlaylistEntity> defaultPlaylistEntities = defaultPlaylistTable.select();
-		final List<DefaultPlaylist> defaultPlaylists = new ArrayList<>();
 		for (DefaultPlaylistEntity defaultPlaylistEntity : defaultPlaylistEntities) {
-			defaultPlaylists.add(new DefaultPlaylist(eventManager, defaultPlaylistEntity));
-		}
-
-		for (DefaultPlaylist defaultPlaylist : defaultPlaylists) {
-			final List<SongEntity> songEntities = songTable.select(s -> s.playlistId == defaultPlaylist.getDefaultPlaylistEntity().getPlaylistId());
+			List<SongEntity> songEntities = songTable.select(s -> s.playlistId == defaultPlaylistEntity.getPlaylistId());
+			List<Song> songs = new ArrayList<>();
 			for (SongEntity songEntity : songEntities) {
-				defaultPlaylist.add(new Song(songEntity));
+				songs.add(new Song(songEntity));
 			}
-			guildMain.getPlaylists().add(defaultPlaylist);
+			guildMain.getPlaylists().add(new DefaultPlaylist(eventManager, defaultPlaylistEntity, songs));
 		}
 	}
 
