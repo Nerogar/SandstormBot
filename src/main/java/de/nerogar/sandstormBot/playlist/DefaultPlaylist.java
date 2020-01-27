@@ -142,7 +142,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public void add(Song song) {
-		boolean wasEmpty = songs.isEmpty();
+		boolean wasEmpty = this.songs.isEmpty();
 		Song oldSong = getCurrentSong();
 
 		songs.add(song);
@@ -157,7 +157,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public void addAll(List<Song> songs) {
-		boolean wasEmpty = songs.isEmpty();
+		boolean wasEmpty = this.songs.isEmpty();
 		Song oldSong = getCurrentSong();
 
 		this.songs.addAll(songs);
