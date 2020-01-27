@@ -16,6 +16,20 @@ public class CommandResults {
 		};
 	}
 
+	public static ICommandResult errorMessage(String message) {
+		return new ICommandResult() {
+			@Override
+			public boolean success() {
+				return false;
+			}
+
+			@Override
+			public String commandFeedback() {
+				return message;
+			}
+		};
+	}
+
 	public static ICommandResult unknownCommand(String command) {
 		return new ICommandResult() {
 			@Override

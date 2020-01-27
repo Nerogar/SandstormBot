@@ -75,6 +75,10 @@ public class GuildMain extends Thread implements IGuildMain {
 		playlists = new Playlists(eventManager, this);
 		player = new OpusPlayer(eventManager, this);
 
+		// if the bot is already connected to a voice channel, reconnect
+		VoiceChannel voiceChannel = guild.getMemberById(guild.getJDA().getSelfUser().getId()).getVoiceState().getChannel();
+		setVoiceChannel(voiceChannel);
+
 		debugStart();
 	}
 
