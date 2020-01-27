@@ -146,6 +146,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		Song oldSong = getCurrentSong();
 
 		songs.add(song);
+		song.getSongEntity().playlistId = getDefaultPlaylistEntity().getPlaylistId();
 		createSkipArrays();
 		if (wasEmpty) defaultPlaylistEntity.currentPosition = 0;
 
@@ -168,6 +169,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		}
 
 		for (Song song : songs) {
+			song.getSongEntity().playlistId = getDefaultPlaylistEntity().getPlaylistId();
 			eventManager.trigger(new SongAddEvent(this, song));
 		}
 		if (oldSong != getCurrentSong()) {

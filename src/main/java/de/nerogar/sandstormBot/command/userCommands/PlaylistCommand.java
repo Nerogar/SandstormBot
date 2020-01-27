@@ -6,6 +6,7 @@ import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
+import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
@@ -22,7 +23,7 @@ public class PlaylistCommand implements IUserCommand {
 
 	@Override
 	public UserGroup getMinUserGroup() {
-		return UserGroup.GUEST;
+		return UserGroup.ADMIN;
 	}
 
 	@Override
@@ -43,6 +44,24 @@ public class PlaylistCommand implements IUserCommand {
 			final DefaultPlaylist playlist = new DefaultPlaylist(guildMain.getEventManager(), name);
 			guildMain.getPlaylists().add(playlist);
 			return CommandResults.success();
+		} else if (commandSplit[1].equals("remove") && commandSplit.length >= 3) {
+			final String name = command.split("\\s+", 3)[2];
+			for (IPlaylist playlist : guildMain.getPlaylists()) {
+				if (playlist.getName().equalsIgnoreCase(name)) {
+					guildMain.getPlaylists().remove(playlist);
+					return CommandResults.success();
+				}
+			}
+			return CommandResults.errorMessage("playlist not found: " + name);
+		} else if (commandSplit[1].equals("switch") && commandSplit.length >= 3) {
+			final String name = command.split("\\s+", 3)[2].toLowerCase();
+			for (IPlaylist playlist : guildMain.getPlaylists()) {
+				if (playlist.getName().toLowerCase().contains(name)) {
+					guildMain.getPlaylists().setCurrent(playlist);
+					return CommandResults.success();
+				}
+			}
+			return CommandResults.errorMessage("playlist not found: " + name);
 		}
 		return CommandResults.unknownCommand(command);
 	}

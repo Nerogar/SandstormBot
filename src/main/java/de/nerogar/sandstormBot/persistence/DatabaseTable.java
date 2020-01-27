@@ -113,6 +113,8 @@ public class DatabaseTable<T extends PersistenceEntity> {
 			ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 			generatedKeys.next();
 			entity.setId(generatedKeys.getInt(1));
+
+			entities.add(entity);
 		} catch (SQLException e) {
 			Main.LOGGER.log(Logger.ERROR, "Could not insert entity: " + entity);
 			e.printStackTrace(Main.LOGGER.getErrorStream());
@@ -124,6 +126,7 @@ public class DatabaseTable<T extends PersistenceEntity> {
 
 		try (PreparedStatement preparedStatement = database.getConnection().prepareStatement(deleteStatement)) {
 			preparedStatement.execute();
+			entities.remove(entity);
 		} catch (SQLException e) {
 			Main.LOGGER.log(Logger.ERROR, "Could not delete entity: " + entity);
 			e.printStackTrace(Main.LOGGER.getErrorStream());

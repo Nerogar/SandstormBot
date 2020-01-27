@@ -25,7 +25,7 @@ create table DefaultPlaylist
 
 create table Playlists
 (
-    "Playlists"       integer primary key autoincrement,
+    "PlaylistsId"     integer primary key autoincrement,
     "CurrentPlaylist" integer not null
 );
 
