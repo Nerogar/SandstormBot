@@ -1,6 +1,5 @@
 package de.nerogar.sandstormBot;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,13 +9,9 @@ public class GlobalSettings {
 
 	public String loginToken = "";
 
-	public String      ownerId          = "";
-	public Set<String> permissionRoleId = Collections.emptySet();
-	public Set<String> channelId        = Collections.emptySet();
+	public String ownerId = "";
 
 	public String timeZoneId = "UTC";
-
-	public String commandPrefix = "!";
 
 	public int playerGuiUpdateInterval = 10;
 	public int playlistGuiEntries      = 12;
@@ -39,17 +34,8 @@ public class GlobalSettings {
 	public String redditClientId     = null;
 	public String redditClientSecret = null;
 
-	public EmoteCommand[] emoteCommands = {};
-
 	public String ffmpegCommand   = "ffmpeg";
 	public String youtubDlCommand = "youtube-dl";
 	public String curlCommand     = "curl";
-
-	public static class EmoteCommand {
-
-		public String  emote;
-		public String  command;
-		public boolean hidden = false;
-	}
 
 }

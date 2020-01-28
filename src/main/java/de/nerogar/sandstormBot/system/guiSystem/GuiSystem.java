@@ -1,7 +1,9 @@
 package de.nerogar.sandstormBot.system.guiSystem;
 
+import de.nerogar.sandstormBot.GuildSettings;
 import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.event.events.*;
+import de.nerogar.sandstormBot.gui.MessagePanel;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.system.ISystem;
 
@@ -44,8 +46,16 @@ public class GuiSystem implements ISystem {
 		// player panel
 		eventManager.register(SongChangeEvent.class, e -> playerPanel.setDirty());
 		eventManager.register(SongChangeCurrentEvent.class, e -> playerPanel.setDirty());
+		initEmoteCommands(playerPanel);
 
 		// start thread
 		new GuiUpdateThread(guildMain).start();
 	}
+
+	private void initEmoteCommands(MessagePanel panel) {
+		for (GuildSettings.EmoteCommand emoteCommand : guildMain.getSettings().emoteCommands) {
+			panel.getMessage().addReaction(emoteCommand.emote).queue();
+		}
+	}
+
 }

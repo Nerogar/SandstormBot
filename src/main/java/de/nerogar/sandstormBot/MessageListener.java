@@ -31,9 +31,10 @@ public class MessageListener extends ListenerAdapter {
 	}
 
 	private void reactionCommand(Guild guild, MessageChannel channel, Member member, String messageId, String command) {
-		for (GlobalSettings.EmoteCommand emoteCommand : Main.SETTINGS.emoteCommands) {
+		IGuildMain guildMain = Main.getGuildMain(guild);
+		for (GuildSettings.EmoteCommand emoteCommand : guildMain.getSettings().emoteCommands) {
 			if (command.equals(emoteCommand.emote)) {
-				Main.getGuildMain(guild).getUserCommands().execute(member, Main.SETTINGS.commandPrefix + emoteCommand.command);
+				guildMain.getUserCommands().execute(member, emoteCommand.command);
 			}
 		}
 	}
@@ -41,14 +42,14 @@ public class MessageListener extends ListenerAdapter {
 	@Override
 	public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(event.getMember().getUser().getId())) return;
-		if (!Main.SETTINGS.channelId.contains(event.getChannel().getId())) return;
+		if (!Main.getGuildMain(event.getGuild()).getSettings().uiChannelId.equals(event.getChannel().getId())) return;
 		reactionCommand(event.getGuild(), event.getChannel(), event.getMember(), event.getMessageId(), event.getReactionEmote().getName());
 	}
 
 	@Override
 	public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(event.getMember().getUser().getId())) return;
-		if (!Main.SETTINGS.channelId.contains(event.getChannel().getId())) return;
+		if (!Main.getGuildMain(event.getGuild()).getSettings().uiChannelId.equals(event.getChannel().getId())) return;
 		reactionCommand(event.getGuild(), event.getChannel(), event.getMember(), event.getMessageId(), event.getReactionEmote().getName());
 	}
 

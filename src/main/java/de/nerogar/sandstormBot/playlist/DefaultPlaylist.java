@@ -41,6 +41,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		this.defaultPlaylistEntity = defaultPlaylistEntity;
 
 		this.songs = new ArrayList<>(songs);
+		createSkipArrays();
 	}
 
 	public DefaultPlaylist(EventManager eventManager, String name) {

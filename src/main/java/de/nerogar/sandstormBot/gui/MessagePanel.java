@@ -14,9 +14,9 @@ public abstract class MessagePanel {
 		isDirty = true;
 	}
 
-	public final void setDirty() {
-		isDirty = true;
-	}
+	public Message getMessage()  { return message; }
+
+	public final void setDirty() { isDirty = true; }
 
 	protected abstract String render();
 

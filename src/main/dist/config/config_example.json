@@ -1,14 +1,14 @@
 {
 	"debug": false,
 
-	// to generate the login token:
+	// To generate the login token:
 	// 1. go to  https://discordapp.com/developers/applications/
 	// 2. create a new application
 	// 3. go to the Bot tab and add a bot
 	"loginToken": "",
 
 
-	// your discord user id (enable developer mode in discord if you don't see "Copy ID" in the right click menu on your username)
+	// Your discord user id (enable developer mode in discord if you don't see "Copy ID" in the right click menu on your username)
 	"ownerId": "",
 
 	// Users with any of these roles will have additional permission.
@@ -16,15 +16,7 @@
 		""
 	],
 
-	// One channel per server. The bot will listen to commands in only that channel.
-	"channelId": [
-		""
-	],
-
 	"timeZoneId": "UTC",
-
-	// Prefix for commands, spaces are not supported.
-	"commandPrefix": "!",
 
 	"playerGuiUpdateInterval": 15,
 	"playlistGuiEntries": 12,
