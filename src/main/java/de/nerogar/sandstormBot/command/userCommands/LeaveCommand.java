@@ -8,14 +8,14 @@ import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
-public class JoinCommand implements IUserCommand {
+public class LeaveCommand implements IUserCommand {
 
 	private VoiceChannel voiceChannel;
 
 	@Override
 	public boolean accepts(String command, String[] commandSplit) {
 		if (command.isBlank()) return false;
-		return commandSplit[0].equals("join");
+		return commandSplit[0].equals("leave");
 	}
 
 	@Override
@@ -25,21 +25,16 @@ public class JoinCommand implements IUserCommand {
 
 	@Override
 	public void setCommandString(VoiceChannel voiceChannel, Member member, String command, String[] commandSplit) {
-		this.voiceChannel = voiceChannel;
 	}
 
 	@Override
 	public IUserCommand newInstance() {
-		return new JoinCommand();
+		return new LeaveCommand();
 	}
 
 	@Override
 	public ICommandResult execute(IGuildMain guildMain) {
-		if (voiceChannel != null) {
-			guildMain.setVoiceChannel(voiceChannel);
-			return CommandResults.success();
-		} else {
-			return CommandResults.errorMessage("you are not in a voice channel");
-		}
+		guildMain.setVoiceChannel(null);
+		return CommandResults.success();
 	}
 }
