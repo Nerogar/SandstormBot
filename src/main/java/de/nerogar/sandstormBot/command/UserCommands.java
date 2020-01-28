@@ -7,8 +7,8 @@ import de.nerogar.sandstormBot.command.userCommands.*;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.ICommand;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 
 import java.util.ArrayList;
 import java.util.List;

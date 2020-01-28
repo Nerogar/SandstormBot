@@ -11,7 +11,7 @@ import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommand;
 import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
-import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.io.IOException;
 import java.util.*;

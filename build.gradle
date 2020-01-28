@@ -53,13 +53,13 @@ repositories {
 
 
 group = 'de.nerogar'
-version = '1.0.0'
+version = '2.0.0_SNAPSHOT'
 sourceCompatibility = 13
 targetCompatibility = 13
 
 dependencies {
     // jda (discord api)
-    compile ('net.dv8tion:JDA:3.8.3_464') {
+    compile ('net.dv8tion:JDA:4.1.1_101') {
         // all audio is pre encoded with opus, we don't need the opus module
         exclude module: 'opus-java'
     }

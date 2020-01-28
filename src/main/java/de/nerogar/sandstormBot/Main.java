@@ -2,17 +2,14 @@ package de.nerogar.sandstormBot;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.nerogar.sandstormBot.persistence.Database;
-import de.nerogar.sandstormBot.persistence.Migration;
 import de.nerogar.sandstormBotApi.IGuildMain;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Guild;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
@@ -66,7 +63,7 @@ public class Main {
 
 		MessageListener messageListener = new MessageListener();
 		JDA jda = new JDABuilder(SETTINGS.loginToken)
-				.addEventListener(messageListener)
+				.addEventListeners(messageListener)
 				.build();
 		jda.awaitReady();
 

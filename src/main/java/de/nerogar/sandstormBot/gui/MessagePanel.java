@@ -1,7 +1,7 @@
 package de.nerogar.sandstormBot.gui;
 
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 public abstract class MessagePanel {
 
