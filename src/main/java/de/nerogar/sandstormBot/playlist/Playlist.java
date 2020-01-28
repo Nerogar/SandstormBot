@@ -6,14 +6,14 @@ import de.nerogar.sandstormBot.event.events.SongAddEvent;
 import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongRemoveEvent;
 import de.nerogar.sandstormBot.opusPlayer.Song;
-import de.nerogar.sandstormBot.persistence.entities.DefaultPlaylistEntity;
+import de.nerogar.sandstormBot.persistence.entities.PlaylistEntity;
 import de.nerogar.sandstormBotApi.opusPlayer.ISongPredicate;
 import de.nerogar.sandstormBotApi.playlist.IModifiablePlaylist;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
 import java.util.*;
 
-public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
+public class Playlist implements IPlaylist, IModifiablePlaylist {
 
 	public enum Order {
 		DEFAULT("default"),
@@ -31,26 +31,26 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 	private EventManager eventManager;
 	private List<Song>   songs;
 
-	private DefaultPlaylistEntity defaultPlaylistEntity;
+	private PlaylistEntity playlistEntity;
 
 	private int[] nextArray;
 	private int[] previousArray;
 
-	public DefaultPlaylist(EventManager eventManager, DefaultPlaylistEntity defaultPlaylistEntity, List<Song> songs) {
+	public Playlist(EventManager eventManager, PlaylistEntity playlistEntity, List<Song> songs) {
 		this.eventManager = eventManager;
-		this.defaultPlaylistEntity = defaultPlaylistEntity;
+		this.playlistEntity = playlistEntity;
 
 		this.songs = new ArrayList<>(songs);
 		createSkipArrays();
 	}
 
-	public DefaultPlaylist(EventManager eventManager, String name) {
-		this(eventManager, new DefaultPlaylistEntity(name, Order.DEFAULT, -1), Collections.emptyList());
+	public Playlist(EventManager eventManager, String name) {
+		this(eventManager, new PlaylistEntity(name, Order.DEFAULT, -1), Collections.emptyList());
 	}
 
 	@Override
 	public String getName() {
-		return defaultPlaylistEntity.name;
+		return playlistEntity.name;
 	}
 
 	@Override
@@ -63,16 +63,16 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		return songs.size();
 	}
 
-	public DefaultPlaylistEntity getDefaultPlaylistEntity() {
-		return defaultPlaylistEntity;
+	public PlaylistEntity getPlaylistEntity() {
+		return playlistEntity;
 	}
 
 	public Order getOrder() {
-		return defaultPlaylistEntity.order;
+		return playlistEntity.order;
 	}
 
 	public void setOrder(Order order) {
-		defaultPlaylistEntity.order = order;
+		playlistEntity.order = order;
 		createSkipArrays();
 
 		eventManager.trigger(new PlaylistChangeEvent(this));
@@ -85,9 +85,9 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 			indexArray[i] = i;
 		}
 
-		if (defaultPlaylistEntity.order == Order.SHUFFLE_TRACK) {
+		if (playlistEntity.order == Order.SHUFFLE_TRACK) {
 			shuffleTrack(indexArray);
-		} else if (defaultPlaylistEntity.order == Order.SHUFFLE_ALBUM) {
+		} else if (playlistEntity.order == Order.SHUFFLE_ALBUM) {
 			shuffleAlbum(indexArray);
 		}
 
@@ -147,9 +147,9 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		Song oldSong = getCurrentSong();
 
 		songs.add(song);
-		song.getSongEntity().playlistId = getDefaultPlaylistEntity().getPlaylistId();
+		song.getSongEntity().playlistId = getPlaylistEntity().getId();
 		createSkipArrays();
-		if (wasEmpty) defaultPlaylistEntity.currentPosition = 0;
+		if (wasEmpty) playlistEntity.currentPosition = 0;
 
 		eventManager.trigger(new SongAddEvent(this, song));
 		if (oldSong != getCurrentSong()) {
@@ -166,11 +166,11 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 		createSkipArrays();
 
 		if (wasEmpty && this.songs.size() > 0) {
-			defaultPlaylistEntity.currentPosition = 0;
+			playlistEntity.currentPosition = 0;
 		}
 
 		for (Song song : songs) {
-			song.getSongEntity().playlistId = getDefaultPlaylistEntity().getPlaylistId();
+			song.getSongEntity().playlistId = getPlaylistEntity().getId();
 			eventManager.trigger(new SongAddEvent(this, song));
 		}
 		if (oldSong != getCurrentSong()) {
@@ -194,7 +194,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 			Song song = songs.get(i);
 			if (predicate.test(song)) {
 				songs.remove(i);
-				if (i < defaultPlaylistEntity.currentPosition) defaultPlaylistEntity.currentPosition--;
+				if (i < playlistEntity.currentPosition) playlistEntity.currentPosition--;
 				i--;
 				removed++;
 
@@ -202,8 +202,8 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 			}
 		}
 
-		if (defaultPlaylistEntity.currentPosition >= songs.size()) {
-			defaultPlaylistEntity.currentPosition = -1;
+		if (playlistEntity.currentPosition >= songs.size()) {
+			playlistEntity.currentPosition = -1;
 		}
 
 		createSkipArrays();
@@ -217,12 +217,12 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public Song getCurrentSong() {
-		if (defaultPlaylistEntity.currentPosition < 0) return null;
-		return songs.get(defaultPlaylistEntity.currentPosition);
+		if (playlistEntity.currentPosition < 0) return null;
+		return songs.get(playlistEntity.currentPosition);
 	}
 
 	public Song getNextPlaying(int offset) {
-		if (defaultPlaylistEntity.currentPosition < 0) {
+		if (playlistEntity.currentPosition < 0) {
 			if (songs.size() > 0) {
 				return songs.get(0);
 			} else {
@@ -230,7 +230,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 			}
 		}
 
-		int i = defaultPlaylistEntity.currentPosition;
+		int i = playlistEntity.currentPosition;
 		for (int j = 0; j < offset; j++) {
 			i = nextArray[i];
 		}
@@ -238,15 +238,15 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 	}
 
 	private void doSkips(ISongPredicate songPredicate, int[] skipArray) {
-		int oldId = defaultPlaylistEntity.currentPosition;
+		int oldId = playlistEntity.currentPosition;
 		int invocation = 0;
 		do {
-			if (defaultPlaylistEntity.currentPosition < 0 && songs.size() > 0) {
-				defaultPlaylistEntity.currentPosition = 0;
-			} else if (defaultPlaylistEntity.currentPosition >= 0) {
-				defaultPlaylistEntity.currentPosition = skipArray[defaultPlaylistEntity.currentPosition];
+			if (playlistEntity.currentPosition < 0 && songs.size() > 0) {
+				playlistEntity.currentPosition = 0;
+			} else if (playlistEntity.currentPosition >= 0) {
+				playlistEntity.currentPosition = skipArray[playlistEntity.currentPosition];
 			}
-		} while (!songPredicate.test(getCurrentSong(), defaultPlaylistEntity.currentPosition, ++invocation) && defaultPlaylistEntity.currentPosition != oldId);
+		} while (!songPredicate.test(getCurrentSong(), playlistEntity.currentPosition, ++invocation) && playlistEntity.currentPosition != oldId);
 	}
 
 	@Override
@@ -259,9 +259,9 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public Song getNext(int offset) {
-		if (defaultPlaylistEntity.currentPosition < 0) return null;
+		if (playlistEntity.currentPosition < 0) return null;
 
-		int position = defaultPlaylistEntity.currentPosition;
+		int position = playlistEntity.currentPosition;
 
 		for (int i = 0; i < offset; i++) {
 			position = nextArray[position];
@@ -280,9 +280,9 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public Song getPrevious(int offset) {
-		if (defaultPlaylistEntity.currentPosition < 0) return null;
+		if (playlistEntity.currentPosition < 0) return null;
 
-		int position = defaultPlaylistEntity.currentPosition;
+		int position = playlistEntity.currentPosition;
 
 		for (int i = 0; i < offset; i++) {
 			position = previousArray[position];
@@ -292,7 +292,7 @@ public class DefaultPlaylist implements IPlaylist, IModifiablePlaylist {
 	}
 
 	public void stop() {
-		defaultPlaylistEntity.currentPosition = -1;
+		playlistEntity.currentPosition = -1;
 	}
 
 }

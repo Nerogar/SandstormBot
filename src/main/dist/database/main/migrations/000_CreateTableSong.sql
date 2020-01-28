@@ -14,13 +14,12 @@ create table Song
     "LastPlayed"             timestamp not null
 );
 
-create table DefaultPlaylist
+create table Playlist
 (
-    "DefaultPlaylistId" integer primary key autoincrement,
-    "PlaylistId"        integer not null,
-    "Name"              text    not null,
-    "Order"             text    not null,
-    "CurrentPosition"   integer not null
+    "PlaylistId"      integer primary key autoincrement,
+    "Name"            text    not null,
+    "Order"           text    not null,
+    "CurrentPosition" integer not null
 );
 
 create table Playlists
@@ -29,5 +28,5 @@ create table Playlists
     "CurrentPlaylist" integer not null
 );
 
-insert into DefaultPlaylist ("PlaylistId", "Name", "Order", "CurrentPosition")
+insert into Playlist ("PlaylistId", "Name", "Order", "CurrentPosition")
 values (0, 'default playlist', 'DEFAULT', -1);

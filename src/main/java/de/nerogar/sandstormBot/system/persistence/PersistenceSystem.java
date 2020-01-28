@@ -6,10 +6,10 @@ import de.nerogar.sandstormBot.event.events.*;
 import de.nerogar.sandstormBot.opusPlayer.Song;
 import de.nerogar.sandstormBot.persistence.Database;
 import de.nerogar.sandstormBot.persistence.DatabaseTable;
-import de.nerogar.sandstormBot.persistence.entities.DefaultPlaylistEntity;
+import de.nerogar.sandstormBot.persistence.entities.PlaylistEntity;
 import de.nerogar.sandstormBot.persistence.entities.PlaylistsEntity;
 import de.nerogar.sandstormBot.persistence.entities.SongEntity;
-import de.nerogar.sandstormBot.playlist.DefaultPlaylist;
+import de.nerogar.sandstormBot.playlist.Playlist;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.system.ISystem;
 
@@ -22,10 +22,10 @@ public class PersistenceSystem implements ISystem {
 	private EventManager eventManager;
 	private IGuildMain   guildMain;
 
-	private Database                             database;
-	private DatabaseTable<SongEntity>            songTable;
-	private DatabaseTable<DefaultPlaylistEntity> defaultPlaylistTable;
-	private DatabaseTable<PlaylistsEntity>       playlistsTable;
+	private Database                       database;
+	private DatabaseTable<SongEntity>      songTable;
+	private DatabaseTable<PlaylistEntity>  playlistTable;
+	private DatabaseTable<PlaylistsEntity> playlistsTable;
 
 	@Override
 	public void init(EventManager eventManager, IGuildMain guildMain) {
@@ -37,7 +37,7 @@ public class PersistenceSystem implements ISystem {
 		try {
 			database = new Database(guildId + "/main.db", Database.loadMigrations("database/main/migrations"));
 			songTable = database.attachTable(SongEntity.class, "Song");
-			defaultPlaylistTable = database.attachTable(DefaultPlaylistEntity.class, "DefaultPlaylist");
+			playlistTable = database.attachTable(PlaylistEntity.class, "Playlist");
 			playlistsTable = database.attachTable(PlaylistsEntity.class, "Playlists");
 			if (playlistsTable.select().size() == 0) {
 				playlistsTable.insert(new PlaylistsEntity());
@@ -60,43 +60,43 @@ public class PersistenceSystem implements ISystem {
 	}
 
 	private void loadSongs() {
-		final List<DefaultPlaylistEntity> defaultPlaylistEntities = defaultPlaylistTable.select();
-		for (DefaultPlaylistEntity defaultPlaylistEntity : defaultPlaylistEntities) {
-			List<SongEntity> songEntities = songTable.select(s -> s.playlistId == defaultPlaylistEntity.getPlaylistId());
+		final List<PlaylistEntity> playlistEntities = playlistTable.select();
+		for (PlaylistEntity playlistEntity : playlistEntities) {
+			List<SongEntity> songEntities = songTable.select(s -> s.playlistId == playlistEntity.getId());
 			List<Song> songs = new ArrayList<>();
 			for (SongEntity songEntity : songEntities) {
 				songs.add(new Song(songEntity));
 			}
-			DefaultPlaylist playlist = new DefaultPlaylist(eventManager, defaultPlaylistEntity, songs);
+			Playlist playlist = new Playlist(eventManager, playlistEntity, songs);
 			guildMain.getPlaylists().add(playlist);
-			if (defaultPlaylistEntity.getPlaylistId() == playlistsTable.select().get(0).currentPlaylist) {
+			if (playlistEntity.getId() == playlistsTable.select().get(0).currentPlaylist) {
 				guildMain.getPlaylists().setCurrent(playlist);
 			}
 		}
 	}
 
 	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {
-		playlistsTable.select().get(0).currentPlaylist = ((DefaultPlaylist) event.newPlaylist).getDefaultPlaylistEntity().getPlaylistId();
+		playlistsTable.select().get(0).currentPlaylist = ((Playlist) event.newPlaylist).getPlaylistEntity().getId();
 		playlistsTable.update(playlistsTable.select().get(0));
 	}
 
 	private void onSongChangeCurrent(SongChangeCurrentEvent event) {
-		if (event.playlist instanceof DefaultPlaylist) {
-			defaultPlaylistTable.update(((DefaultPlaylist) event.playlist).getDefaultPlaylistEntity());
+		if (event.playlist instanceof Playlist) {
+			playlistTable.update(((Playlist) event.playlist).getPlaylistEntity());
 		}
 	}
 
 	private void onPlaylistAdd(PlaylistAddEvent event) {
-		if (event.playlist.getClass() == DefaultPlaylist.class) {
-			final DefaultPlaylist defaultPlaylist = (DefaultPlaylist) event.playlist;
-			defaultPlaylistTable.insert(defaultPlaylist.getDefaultPlaylistEntity());
+		if (event.playlist.getClass() == Playlist.class) {
+			final Playlist playlist = (Playlist) event.playlist;
+			playlistTable.insert(playlist.getPlaylistEntity());
 		}
 	}
 
 	private void onPlaylistRemove(PlaylistRemoveEvent event) {
-		if (event.playlist.getClass() == DefaultPlaylist.class) {
-			final DefaultPlaylist defaultPlaylist = (DefaultPlaylist) event.playlist;
-			defaultPlaylistTable.insert(defaultPlaylist.getDefaultPlaylistEntity());
+		if (event.playlist.getClass() == Playlist.class) {
+			final Playlist playlist = (Playlist) event.playlist;
+			playlistTable.insert(playlist.getPlaylistEntity());
 		}
 	}
 

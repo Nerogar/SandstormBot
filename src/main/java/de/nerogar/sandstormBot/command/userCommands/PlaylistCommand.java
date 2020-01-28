@@ -1,7 +1,7 @@
 package de.nerogar.sandstormBot.command.userCommands;
 
 import de.nerogar.sandstormBot.UserGroup;
-import de.nerogar.sandstormBot.playlist.DefaultPlaylist;
+import de.nerogar.sandstormBot.playlist.Playlist;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommandResult;
@@ -41,7 +41,7 @@ public class PlaylistCommand implements IUserCommand {
 	public ICommandResult execute(IGuildMain guildMain) {
 		if (commandSplit[1].equals("add") && commandSplit.length >= 3) {
 			final String name = command.split("\\s+", 3)[2];
-			final DefaultPlaylist playlist = new DefaultPlaylist(guildMain.getEventManager(), name);
+			final Playlist playlist = new Playlist(guildMain.getEventManager(), name);
 			guildMain.getPlaylists().add(playlist);
 			return CommandResults.success();
 		} else if (commandSplit[1].equals("remove") && commandSplit.length >= 3) {

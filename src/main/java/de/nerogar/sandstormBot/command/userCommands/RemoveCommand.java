@@ -14,7 +14,7 @@ public class RemoveCommand implements IUserCommand {
 
 	@Override
 	public boolean accepts(String command, String[] commandSplit) {
-		if (command.isBlank()) return false;
+		if (commandSplit.length < 2) return false;
 		return commandSplit[0].equals("remove");
 	}
 
