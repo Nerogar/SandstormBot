@@ -8,8 +8,8 @@ import de.nerogar.sandstormBot.gui.Gui;
 import de.nerogar.sandstormBotApi.command.ICommand;
 import de.nerogar.sandstormBotApi.opusPlayer.IOpusPlayer;
 import de.nerogar.sandstormBotApi.playlist.IPlaylists;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

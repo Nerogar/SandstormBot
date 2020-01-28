@@ -23,8 +23,10 @@ public class UserCommands {
 
 		userCommands = new ArrayList<>();
 		userCommands.add(new JoinCommand());
+		userCommands.add(new LeaveCommand());
 		userCommands.add(new PlayCommand());
 		userCommands.add(new PauseCommand());
+		userCommands.add(new TogglePauseCommand());
 		userCommands.add(new NextCommand());
 		userCommands.add(new RemoveCommand());
 		userCommands.add(new PreviousCommand());

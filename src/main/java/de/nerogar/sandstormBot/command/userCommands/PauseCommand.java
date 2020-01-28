@@ -18,7 +18,7 @@ public class PauseCommand implements IUserCommand {
 
 	@Override
 	public UserGroup getMinUserGroup() {
-		return UserGroup.OWNER;
+		return UserGroup.GUEST;
 	}
 
 	@Override

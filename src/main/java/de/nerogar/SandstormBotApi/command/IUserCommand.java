@@ -1,8 +1,8 @@
 package de.nerogar.sandstormBotApi.command;
 
 import de.nerogar.sandstormBot.UserGroup;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public interface IUserCommand extends ICommand {
 
