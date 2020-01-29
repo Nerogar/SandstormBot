@@ -1,8 +1,16 @@
 package de.nerogar.sandstormBotApi.playlist;
 
 import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBot.persistence.entities.PlaylistEntity;
 
 public interface IReadablePlaylist {
+
+	/**
+	 * Returns the playlist entity.
+	 *
+	 * @return the playlist entity
+	 */
+	PlaylistEntity getPlaylistEntity();
 
 	/**
 	 * Returns the current song.

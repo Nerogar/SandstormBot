@@ -79,4 +79,20 @@ public class SongEntity extends PersistenceEntity {
 		preparedStatement.setInt(++index, playCount);
 		preparedStatement.setTimestamp(++index, Timestamp.from(lastPlayed));
 	}
+
+	public SongEntity clone() {
+		SongEntity newSongEntity = new SongEntity();
+		newSongEntity.audioTrackProviderName = audioTrackProviderName;
+		newSongEntity.location = location;
+		newSongEntity.playlistId = playlistId;
+		newSongEntity.title = title;
+		newSongEntity.artist = artist;
+		newSongEntity.album = album;
+		newSongEntity.duration = duration;
+		newSongEntity.query = query;
+		newSongEntity.user = user;
+		newSongEntity.playCount = playCount;
+		newSongEntity.lastPlayed = lastPlayed;
+		return newSongEntity;
+	}
 }

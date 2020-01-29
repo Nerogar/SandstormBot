@@ -34,33 +34,39 @@ public class YoutubeDlCommand implements ICommand {
 
 	private List<String> getPredictedSongLocations() {
 		List<String> songLocations = new ArrayList<>();
+		List<String> cachedSongLocations = YoutubeDlRequestCache.getQueryEntry(query);
+		if (cachedSongLocations != null) {
+			songLocations.addAll(cachedSongLocations);
+		} else {
 
-		// youtube-dl --ignore-errors --flat-playlist --default-search ytsearch1: --dump-json -- input
-		String[] youtubeDLRequest = {
-				Main.SETTINGS.youtubDlCommand,
-				"--ignore-errors",
-				"--flat-playlist",
-				"--default-search", "ytsearch1:",
-				"--dump-json",
-				"--",
-				query
-		};
-		String youtubeResponse = ProcessHelper.executeBlocking(youtubeDLRequest, true, false);
+			// youtube-dl --ignore-errors --flat-playlist --default-search ytsearch1: --dump-json -- input
+			String[] youtubeDLRequest = {
+					Main.SETTINGS.youtubDlCommand,
+					"--ignore-errors",
+					"--flat-playlist",
+					"--default-search", "ytsearch1:",
+					"--dump-json",
+					"--",
+					query
+			};
+			String youtubeResponse = ProcessHelper.executeBlocking(youtubeDLRequest, true, false);
 
-		if (youtubeResponse == null) return Collections.emptyList();
+			if (youtubeResponse == null) return Collections.emptyList();
 
-		String[] jsonStrings = youtubeResponse.split("\n");
-		ObjectMapper objectMapper = new ObjectMapper();
+			String[] jsonStrings = youtubeResponse.split("\n");
+			ObjectMapper objectMapper = new ObjectMapper();
 
-		for (String jsonString : jsonStrings) {
-			try {
-				JsonNode jsonNode = objectMapper.readTree(jsonString);
-				String url = jsonNode.has("webpage_url") ? jsonNode.get("webpage_url").asText() : jsonNode.get("url").asText();
+			for (String jsonString : jsonStrings) {
+				try {
+					JsonNode jsonNode = objectMapper.readTree(jsonString);
+					String url = jsonNode.has("webpage_url") ? jsonNode.get("webpage_url").asText() : jsonNode.get("url").asText();
 
-				songLocations.add(url);
-			} catch (IOException e) {
-				e.printStackTrace(Main.LOGGER.getWarningStream());
+					songLocations.add(url);
+				} catch (IOException e) {
+					e.printStackTrace(Main.LOGGER.getWarningStream());
+				}
 			}
+			YoutubeDlRequestCache.addQueryEntry(query, songLocations);
 		}
 
 		return songLocations;
