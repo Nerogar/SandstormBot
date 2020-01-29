@@ -1,7 +1,5 @@
 package de.nerogar.sandstormBot.opusPlayer;
 
-import de.nerogar.sandstormBot.Logger;
-import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
 import de.nerogar.sandstormBot.audioTrackProvider.CacheSongCommand;
 import de.nerogar.sandstormBot.event.EventManager;
@@ -166,16 +164,17 @@ public class OpusPlayer implements IOpusPlayer {
 	}
 
 	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {
-		boolean playing = playerState == PlayerState.PLAYING;
 		this.playlist = event.newPlaylist;
 
-		if (playing) {
+		if (playerState == PlayerState.PLAYING) {
 			play(true);
 		}
 	}
 
 	private void onSongChangeCurrent(SongChangeCurrentEvent event) {
-		play(true);
+		if (playerState == PlayerState.PLAYING) {
+			play(true);
+		}
 	}
 
 	private void onSongCacheStateChange(SongCacheStateChangeEvent event) {

@@ -8,7 +8,7 @@ import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class AddCommand implements IUserCommand {
+public class QueueCommand implements IUserCommand {
 
 	private Member   member;
 	private String   command;
@@ -17,7 +17,7 @@ public class AddCommand implements IUserCommand {
 	@Override
 	public boolean accepts(String command, String[] commandSplit) {
 		if (commandSplit.length < 2) return false;
-		return commandSplit[0].equals("add");
+		return commandSplit[0].equals("queue");
 	}
 
 	@Override
@@ -34,12 +34,12 @@ public class AddCommand implements IUserCommand {
 
 	@Override
 	public IUserCommand newInstance() {
-		return new AddCommand();
+		return new QueueCommand();
 	}
 
 	@Override
 	public ICommandResult execute(IGuildMain guildMain) {
-		guildMain.getCommandQueue().add(new YoutubeDlCommand(command.substring("add".length()).strip(), member, guildMain.getPlaylists().getCurrent()));
+		guildMain.getCommandQueue().add(new YoutubeDlCommand(command.substring("queue".length()).strip(), member, guildMain.getPlaylists().getQueue()));
 		return CommandResults.success();
 	}
 }

@@ -10,6 +10,8 @@ public interface IPlaylists extends Iterable<IPlaylist> {
 
 	List<IPlaylist> getPlaylists();
 
+	IPlaylist getQueue();
+
 	void add(IPlaylist playlist);
 
 	void remove(IPlaylist playlist);

@@ -73,6 +73,11 @@ public class PersistenceSystem implements ISystem {
 				guildMain.getPlaylists().setCurrent(playlist);
 			}
 		}
+
+		List<SongEntity> queueSongEntities = songTable.select(s -> s.playlistId == guildMain.getPlaylists().getQueue().getPlaylistEntity().getId());
+		for (SongEntity queueSongEntity : queueSongEntities) {
+			guildMain.getPlaylists().getQueue().add(new Song(queueSongEntity));
+		}
 	}
 
 	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {

@@ -9,6 +9,7 @@ public class YoutubeDlSystem implements ISystem {
 	@Override
 	public void init(EventManager eventManager, IGuildMain guildMain) {
 		guildMain.getUserCommands().add(new AddCommand());
+		guildMain.getUserCommands().add(new QueueCommand());
 
 		guildMain.getAudioTrackProviders().addAudioTrackProvider(new YoutubeDlAudioTrackProvider());
 	}

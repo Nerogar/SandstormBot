@@ -2,9 +2,7 @@ package de.nerogar.sandstormBot.playlist;
 
 import de.nerogar.sandstormBot.GuildMain;
 import de.nerogar.sandstormBot.event.EventManager;
-import de.nerogar.sandstormBot.event.events.PlaylistAddEvent;
-import de.nerogar.sandstormBot.event.events.PlaylistChangeCurrentEvent;
-import de.nerogar.sandstormBot.event.events.PlaylistRemoveEvent;
+import de.nerogar.sandstormBot.event.events.*;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 import de.nerogar.sandstormBotApi.playlist.IPlaylists;
 
@@ -19,6 +17,7 @@ public class Playlists implements IPlaylists {
 	private final GuildMain    guildMain;
 
 	private List<IPlaylist> playlists;
+	private IPlaylist       queue;
 	private IPlaylist       current;
 
 	public Playlists(EventManager eventManager, GuildMain guildMain) {
@@ -26,11 +25,19 @@ public class Playlists implements IPlaylists {
 		this.guildMain = guildMain;
 
 		this.playlists = new ArrayList<>();
+		this.queue = new PlaylistQueue(eventManager);
+
+		eventManager.register(SongAddEvent.class, this::onSongAdd);
+		eventManager.register(SongRemoveEvent.class, this::onSongRemove);
 	}
 
 	@Override
 	public IPlaylist getCurrent() {
-		return current;
+		if (queue.size() > 0) {
+			return queue;
+		} else {
+			return current;
+		}
 	}
 
 	@Override
@@ -50,11 +57,16 @@ public class Playlists implements IPlaylists {
 	}
 
 	@Override
+	public IPlaylist getQueue() {
+		return queue;
+	}
+
+	@Override
 	public void add(IPlaylist playlist) {
 		if (!playlists.contains(playlist)) {
 			playlists.add(playlist);
 			eventManager.trigger(new PlaylistAddEvent(playlist));
-			if (current == null) {
+			if (getCurrent() == null) {
 				setCurrent(playlist);
 			}
 		} else {
@@ -74,5 +86,22 @@ public class Playlists implements IPlaylists {
 	@Override
 	public Iterator<IPlaylist> iterator() {
 		return playlists.iterator();
+	}
+
+	private void onSongAdd(SongAddEvent event) {
+		if (event.playlist == getQueue()) {
+			// if the queue length is 1 the queue was just activated
+			if (getQueue().size() == 1) {
+				eventManager.trigger(new PlaylistChangeCurrentEvent(current, queue));
+			}
+		}
+	}
+
+	private void onSongRemove(SongRemoveEvent event) {
+		if (event.playlist == getQueue()) {
+			if (getQueue().size() == 0) {
+				eventManager.trigger(new PlaylistChangeCurrentEvent(queue, current));
+			}
+		}
 	}
 }

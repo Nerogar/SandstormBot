@@ -63,6 +63,7 @@ public class Playlist implements IPlaylist, IModifiablePlaylist {
 		return songs.size();
 	}
 
+	@Override
 	public PlaylistEntity getPlaylistEntity() {
 		return playlistEntity;
 	}
@@ -85,9 +86,9 @@ public class Playlist implements IPlaylist, IModifiablePlaylist {
 			indexArray[i] = i;
 		}
 
-		if (playlistEntity.order == Order.SHUFFLE_TRACK) {
+		if (getOrder() == Order.SHUFFLE_TRACK) {
 			shuffleTrack(indexArray);
-		} else if (playlistEntity.order == Order.SHUFFLE_ALBUM) {
+		} else if (getOrder() == Order.SHUFFLE_ALBUM) {
 			shuffleAlbum(indexArray);
 		}
 

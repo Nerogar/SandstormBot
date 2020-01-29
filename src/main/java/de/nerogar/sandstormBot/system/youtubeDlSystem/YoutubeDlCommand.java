@@ -22,12 +22,14 @@ import java.util.concurrent.Future;
 
 public class YoutubeDlCommand implements ICommand {
 
-	private String query;
-	private Member member;
+	private String    query;
+	private Member    member;
+	private IPlaylist playlist;
 
-	public YoutubeDlCommand(String query, Member member) {
+	public YoutubeDlCommand(String query, Member member, IPlaylist playlist) {
 		this.query = query;
 		this.member = member;
+		this.playlist = playlist;
 	}
 
 	private List<String> getPredictedSongLocations() {
@@ -251,10 +253,8 @@ public class YoutubeDlCommand implements ICommand {
 		for (String predictedSongLocation : predictedSongLocations) {
 			Main.LOGGER.log(Logger.DEBUG, predictedSongLocation);
 
-			IPlaylist currentPlaylist = guildMain.getPlaylists().getCurrent();
-
 			List<Song> songs = getSongs(predictedSongLocations);
-			currentPlaylist.addAll(songs);
+			playlist.addAll(songs);
 		}
 
 		return CommandResults.success();
