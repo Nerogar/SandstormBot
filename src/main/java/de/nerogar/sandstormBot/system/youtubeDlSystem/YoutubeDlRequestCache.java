@@ -48,14 +48,14 @@ public class YoutubeDlRequestCache {
 		}
 	}
 
-	public static synchronized void addSongEntry(String location, SongEntity songEntity) {
-		if (songCacheTable.select(s -> s.location.equals(location)).size() == 0) {
+	public static synchronized void addSongEntry(String predictedLocation, SongEntity songEntity) {
+		if (songCacheTable.select(s -> s.predictedLocation.equals(predictedLocation)).size() == 0) {
 			songCacheTable.insert(songEntity.clone());
 		}
 	}
 
-	public static synchronized SongEntity getSongEntry(String location) {
-		List<SongEntity> songEntities = songCacheTable.select(s -> s.location.equals(location));
+	public static synchronized SongEntity getSongEntry(String predictedLocation) {
+		List<SongEntity> songEntities = songCacheTable.select(s -> s.predictedLocation.equals(predictedLocation));
 		if (songEntities.size() > 0) {
 			return songEntities.get(0).clone();
 		} else {

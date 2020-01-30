@@ -20,8 +20,8 @@ public class Song {
 		audioTrackCacheState = AudioTrackCacheState.NONE;
 	}
 
-	public Song(String audioTrackProviderName, String location, String title, String artist, String album, long duration, String query, String user) {
-		this(new SongEntity(audioTrackProviderName, location, title, artist, album, duration, query, user, 0, Instant.MIN));
+	public Song(String audioTrackProviderName, String location, String predictedLocation, String title, String artist, String album, long duration, String query, String user) {
+		this(new SongEntity(audioTrackProviderName, location, predictedLocation, title, artist, album, duration, query, user, 0, Instant.MIN));
 	}
 
 	public SongEntity getSongEntity()         {return songEntity;}

@@ -12,11 +12,12 @@ public class SongEntity extends PersistenceEntity {
 
 	private static final String   ID_COLUMN_NAME = "SongId";
 	private static final String[] COLUMN_NAMES   = {
-			"AudioTrackProviderName", "Location", "PlaylistId", "Title", "Artist", "Album", "Duration", "Query", "User", "PlayCount", "LastPlayed"
+			"AudioTrackProviderName", "Location", "PredictedLocation", "PlaylistId", "Title", "Artist", "Album", "Duration", "Query", "User", "PlayCount", "LastPlayed"
 	};
 
 	public String audioTrackProviderName;
 	public String location;
+	public String predictedLocation;
 
 	public int playlistId;
 
@@ -34,10 +35,11 @@ public class SongEntity extends PersistenceEntity {
 		super(ID_COLUMN_NAME, COLUMN_NAMES);
 	}
 
-	public SongEntity(String audioTrackProviderName, String location, String title, String artist, String album, long duration, String query, String user, int playCount, Instant lastPlayed) {
+	public SongEntity(String audioTrackProviderName, String location, String predictedLocation, String title, String artist, String album, long duration, String query, String user, int playCount, Instant lastPlayed) {
 		this();
 		this.audioTrackProviderName = audioTrackProviderName;
 		this.location = location;
+		this.predictedLocation = predictedLocation;
 		this.title = title;
 		this.artist = artist;
 		this.album = album;
@@ -53,6 +55,7 @@ public class SongEntity extends PersistenceEntity {
 		int index = 0;
 		audioTrackProviderName = resultSet.getString(++index);
 		location = resultSet.getString(++index);
+		predictedLocation = resultSet.getString(++index);
 		playlistId = resultSet.getInt(++index);
 		title = resultSet.getString(++index);
 		artist = resultSet.getString(++index);
@@ -69,6 +72,7 @@ public class SongEntity extends PersistenceEntity {
 		int index = 0;
 		preparedStatement.setString(++index, audioTrackProviderName);
 		preparedStatement.setString(++index, location);
+		preparedStatement.setString(++index, predictedLocation);
 		preparedStatement.setInt(++index, playlistId);
 		preparedStatement.setString(++index, title);
 		preparedStatement.setString(++index, artist);
@@ -84,6 +88,7 @@ public class SongEntity extends PersistenceEntity {
 		SongEntity newSongEntity = new SongEntity();
 		newSongEntity.audioTrackProviderName = audioTrackProviderName;
 		newSongEntity.location = location;
+		newSongEntity.predictedLocation = predictedLocation;
 		newSongEntity.playlistId = playlistId;
 		newSongEntity.title = title;
 		newSongEntity.artist = artist;

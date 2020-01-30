@@ -3,6 +3,7 @@ create table SongCache
     "SongId"                 integer primary key autoincrement,
     "AudioTrackProviderName" text      not null,
     "Location"               text      not null,
+    "PredictedLocation"      text      not null,
     "PlaylistId"             integer   not null,
     "Title"                  text      not null,
     "Artist"                 text      null,
