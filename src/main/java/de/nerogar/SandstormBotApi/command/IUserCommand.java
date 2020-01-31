@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBotApi.command;
 
-import de.nerogar.sandstormBot.UserGroup;
+import de.nerogar.sandstormBotApi.UserGroup;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 

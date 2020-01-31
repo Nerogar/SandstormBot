@@ -4,7 +4,7 @@ import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
 import de.nerogar.sandstormBot.audioTracks.fileAudioTrack.FileAudioTrack;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.audioTrackProvider.IAudioTrackProvider;
 
 import java.io.IOException;

@@ -2,7 +2,7 @@ package de.nerogar.sandstormBot.system.localAudioSystem;
 
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
 import de.nerogar.sandstormBot.audioTracks.fileAudioTrack.FileAudioTrack;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.audioTrackProvider.IAudioTrackProvider;
 
 public class LocalAudioTrackProvider implements IAudioTrackProvider {

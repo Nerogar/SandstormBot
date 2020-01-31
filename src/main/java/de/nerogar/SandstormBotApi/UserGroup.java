@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot;
+package de.nerogar.sandstormBotApi;
 
 public enum UserGroup {
 	OWNER(3),

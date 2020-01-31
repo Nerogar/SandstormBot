@@ -1,7 +1,5 @@
 package de.nerogar.sandstormBotApi.opusPlayer;
 
-import de.nerogar.sandstormBot.opusPlayer.Song;
-
 import java.util.function.Predicate;
 
 @FunctionalInterface

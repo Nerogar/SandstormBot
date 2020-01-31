@@ -5,7 +5,7 @@ import de.nerogar.sandstormBot.event.events.PlaylistChangeEvent;
 import de.nerogar.sandstormBot.event.events.SongAddEvent;
 import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongRemoveEvent;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBot.persistence.entities.PlaylistEntity;
 import de.nerogar.sandstormBotApi.opusPlayer.ISongPredicate;
 import de.nerogar.sandstormBotApi.playlist.IModifiablePlaylist;

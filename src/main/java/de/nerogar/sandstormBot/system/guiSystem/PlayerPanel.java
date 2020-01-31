@@ -1,8 +1,8 @@
 package de.nerogar.sandstormBot.system.guiSystem;
 
 import de.nerogar.sandstormBot.gui.MessagePanel;
-import de.nerogar.sandstormBot.opusPlayer.PlayerState;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 

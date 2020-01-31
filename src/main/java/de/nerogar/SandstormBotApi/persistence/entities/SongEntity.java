@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.persistence.entities;
+package de.nerogar.sandstormBotApi.persistence.entities;
 
 import de.nerogar.sandstormBot.persistence.PersistenceEntity;
 

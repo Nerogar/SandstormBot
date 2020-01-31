@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBotApi.audioTrackProvider;
 
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 
 public interface IAudioTrackProvider {
 

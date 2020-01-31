@@ -1,4 +1,4 @@
-package de.nerogar.sandstormBot.opusPlayer;
+package de.nerogar.sandstormBotApi.opusPlayer;
 
 public enum PlayerState {
 	PLAYING,

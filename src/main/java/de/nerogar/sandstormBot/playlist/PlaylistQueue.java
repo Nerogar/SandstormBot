@@ -2,7 +2,7 @@ package de.nerogar.sandstormBot.playlist;
 
 import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBot.persistence.entities.PlaylistEntity;
 
 import java.util.List;

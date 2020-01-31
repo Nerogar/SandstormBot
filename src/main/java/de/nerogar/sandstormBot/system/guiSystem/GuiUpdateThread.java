@@ -1,6 +1,5 @@
 package de.nerogar.sandstormBot.system.guiSystem;
 
-import de.nerogar.sandstormBot.GuildMain;
 import de.nerogar.sandstormBotApi.IGuildMain;
 
 public class GuiUpdateThread extends Thread {

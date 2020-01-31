@@ -1,7 +1,7 @@
 package de.nerogar.sandstormBot.audioTrackProvider;
 
 import de.nerogar.sandstormBot.event.events.SongCacheStateChangeEvent;
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommand;

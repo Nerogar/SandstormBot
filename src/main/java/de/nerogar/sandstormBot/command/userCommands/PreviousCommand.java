@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBot.command.userCommands;
 
-import de.nerogar.sandstormBot.UserGroup;
+import de.nerogar.sandstormBotApi.UserGroup;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommandResult;

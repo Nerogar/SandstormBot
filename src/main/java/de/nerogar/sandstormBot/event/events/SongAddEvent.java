@@ -1,6 +1,6 @@
 package de.nerogar.sandstormBot.event.events;
 
-import de.nerogar.sandstormBot.opusPlayer.Song;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.event.IEvent;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 

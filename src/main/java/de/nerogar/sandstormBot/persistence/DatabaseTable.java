@@ -127,6 +127,7 @@ public class DatabaseTable<T extends PersistenceEntity> {
 		try (PreparedStatement preparedStatement = database.getConnection().prepareStatement(deleteStatement)) {
 			preparedStatement.execute();
 			entities.remove(entity);
+			entity.setId(0);
 		} catch (SQLException e) {
 			Main.LOGGER.log(Logger.ERROR, "Could not delete entity: " + entity);
 			e.printStackTrace(Main.LOGGER.getErrorStream());

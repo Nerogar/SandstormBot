@@ -1,8 +1,5 @@
 package de.nerogar.sandstormBotApi.opusPlayer;
 
-import de.nerogar.sandstormBot.opusPlayer.PlayerState;
-import de.nerogar.sandstormBotApi.playlist.IReadablePlaylist;
-
 public interface IOpusPlayer {
 
 	/**

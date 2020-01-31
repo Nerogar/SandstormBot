@@ -2,7 +2,7 @@ package de.nerogar.sandstormBot.command;
 
 import de.nerogar.sandstormBot.GuildMain;
 import de.nerogar.sandstormBot.Main;
-import de.nerogar.sandstormBot.UserGroup;
+import de.nerogar.sandstormBotApi.UserGroup;
 import de.nerogar.sandstormBot.command.userCommands.*;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.command.ICommand;

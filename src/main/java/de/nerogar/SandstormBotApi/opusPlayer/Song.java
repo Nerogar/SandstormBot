@@ -1,9 +1,8 @@
-package de.nerogar.sandstormBot.opusPlayer;
+package de.nerogar.sandstormBotApi.opusPlayer;
 
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
-import de.nerogar.sandstormBot.persistence.entities.SongEntity;
-import de.nerogar.sandstormBotApi.opusPlayer.IAudioTrack;
+import de.nerogar.sandstormBotApi.persistence.entities.SongEntity;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -42,7 +41,7 @@ public class Song {
 
 	public String getUser()                   {return songEntity.user;}
 
-	public String getFormattedName(){
+	public String getFormattedName() {
 		if (getAlbum() != null) {
 			return getAlbum() + " - " + getTitle();
 		} else if (getArtist() != null) {

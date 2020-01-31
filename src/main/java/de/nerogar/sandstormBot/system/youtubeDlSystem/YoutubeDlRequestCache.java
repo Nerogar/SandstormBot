@@ -3,7 +3,7 @@ package de.nerogar.sandstormBot.system.youtubeDlSystem;
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.persistence.Database;
 import de.nerogar.sandstormBot.persistence.DatabaseTable;
-import de.nerogar.sandstormBot.persistence.entities.SongEntity;
+import de.nerogar.sandstormBotApi.persistence.entities.SongEntity;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

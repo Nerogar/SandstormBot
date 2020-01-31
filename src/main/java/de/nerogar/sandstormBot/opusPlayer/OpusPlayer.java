@@ -9,9 +9,11 @@ import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongChangeEvent;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.opusPlayer.IOpusPlayer;
+import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
+import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
-import static de.nerogar.sandstormBot.opusPlayer.PlayerState.*;
+import static de.nerogar.sandstormBotApi.opusPlayer.PlayerState.*;
 
 public class OpusPlayer implements IOpusPlayer {
 
