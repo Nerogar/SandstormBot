@@ -267,7 +267,7 @@ public class YoutubeDlSongProvider {
 					}
 				}
 
-				// of no more songs are queued for downloading, terminate this worker thread
+				// if no more songs are queued for downloading, terminate this worker thread
 				if (songLocations.isEmpty()) {
 					getSongLocationsThread.getSongsThreads.remove(this);
 					return;

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class OpusAudioConverter {
 
@@ -24,7 +25,7 @@ public class OpusAudioConverter {
 	private PaddingInputStream     inputStream;
 	private OpusPacketReaderThread opusPacketReaderThread;
 	private SampleCopyThread       sampleCopyThread;
-	private int                    samplesInFfmpeg;
+	private AtomicInteger          samplesInFfmpeg = new AtomicInteger();
 
 	private OggFile                  oggFile;
 	private OggPacketReader          packetReader;
@@ -105,11 +106,11 @@ public class OpusAudioConverter {
 		sampleCopyThread.switchOutput(ffmpeg.getOutputStream());
 	}
 
-	public void setInputStream(InputStream inputStream) {
+	public synchronized void setInputStream(InputStream inputStream) {
 		this.inputStream.setBase(inputStream);
 
 		// throw away all remaining samples in the buffer
-		int framesToThrowAway = samplesInFfmpeg / SAMPLES_PER_FRAME;
+		int framesToThrowAway = samplesInFfmpeg.get() / SAMPLES_PER_FRAME;
 		Main.LOGGER.log(Logger.DEBUG, "throwing away " + framesToThrowAway + " frames");
 		for (int i = 0; i < framesToThrowAway; i++) {
 			get20MsOpusFrame();
@@ -119,11 +120,15 @@ public class OpusAudioConverter {
 	public synchronized byte[] get20MsOpusFrame() {
 		try {
 			byte[] frame = opusPackets.take().getData();
-			samplesInFfmpeg -= SAMPLES_PER_FRAME;
+			samplesInFfmpeg.addAndGet(-SAMPLES_PER_FRAME);
 			return frame;
 		} catch (InterruptedException e) {
 			return null;
 		}
+	}
+
+	public synchronized boolean canProvide20MsOpusFrame() {
+		return opusPackets.size() > 0;
 	}
 
 	public synchronized boolean needsNextInputStream() {
@@ -231,7 +236,7 @@ public class OpusAudioConverter {
 			writingSample++;
 			if (writingSample == BYTES_PER_SAMPLE) {
 				writingSample = 0;
-				samplesInFfmpeg++;
+				samplesInFfmpeg.incrementAndGet();
 			}
 
 			if (writingZeroSample > 0) {

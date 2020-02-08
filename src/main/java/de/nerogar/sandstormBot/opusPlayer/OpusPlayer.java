@@ -1,7 +1,10 @@
 package de.nerogar.sandstormBot.opusPlayer;
 
+import de.nerogar.sandstormBot.Logger;
+import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState;
 import de.nerogar.sandstormBot.audioTrackProvider.CacheSongCommand;
+import de.nerogar.sandstormBot.command.userCommands.NextCommand;
 import de.nerogar.sandstormBot.event.EventManager;
 import de.nerogar.sandstormBot.event.events.PlaylistChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongCacheStateChangeEvent;
@@ -9,13 +12,15 @@ import de.nerogar.sandstormBot.event.events.SongChangeCurrentEvent;
 import de.nerogar.sandstormBot.event.events.SongChangeEvent;
 import de.nerogar.sandstormBotApi.IGuildMain;
 import de.nerogar.sandstormBotApi.opusPlayer.IOpusPlayer;
+import de.nerogar.sandstormBotApi.opusPlayer.PlayState;
 import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
 import de.nerogar.sandstormBotApi.opusPlayer.Song;
-import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static de.nerogar.sandstormBot.audioTrackProvider.AudioTrackCacheState.*;
+import static de.nerogar.sandstormBotApi.opusPlayer.PlayState.*;
 import static de.nerogar.sandstormBotApi.opusPlayer.PlayerState.*;
 
 public class OpusPlayer implements IOpusPlayer {
@@ -25,8 +30,8 @@ public class OpusPlayer implements IOpusPlayer {
 
 	private OpusAudioConverter opusAudioConverter;
 	private PlayerState        playerState;
+	private PlayState          playState;
 
-	private IPlaylist          playlist;
 	private Song               currentSong;
 	private long               currentTrackProgress;
 	private Map<String, Float> volumeModifierMap;
@@ -36,7 +41,7 @@ public class OpusPlayer implements IOpusPlayer {
 		this.eventManager = eventManager;
 		this.guildMain = guildMain;
 
-		setPlayerState(PlayerState.STOPPED);
+		playState = STOPPED;
 		opusAudioConverter = new OpusAudioConverter();
 
 		volumeModifierMap = new ConcurrentHashMap<>();
@@ -46,27 +51,26 @@ public class OpusPlayer implements IOpusPlayer {
 		eventManager.register(SongCacheStateChangeEvent.class, this::onSongCacheStateChange);
 	}
 
-	private void setPlayerState(PlayerState playerState) {
-		this.playerState = playerState;
-	}
-
 	@Override
 	public boolean canProvideFrame() {
-		if (opusAudioConverter.needsNextInputStream()) {
-			if (playlist != null) {
-				if (playerState == PLAYING) {
-					setPlayerState(WAITING_FOR_NEXT_SONG);
-					playlist.next();
-				} else if (playerState == WAITING_FOR_CACHE) {
-					play(false);
-				}
+		if (playState != PLAYING) return false;
+
+		if (playerState == READY) {
+			if (opusAudioConverter.needsNextInputStream()) {
+				playerState = WAITING_FOR_NEXT_SONG;
+				guildMain.getCommandQueue().add(new NextCommand());
+				return false;
+			} else {
+				return true;
 			}
-		} else {
-			if (playerState == WAITING_FOR_SONG_TO_START) {
-				setPlayerState(PLAYING);
+		} else if (playerState == WAITING_FOR_SONG_TO_START) {
+			if (opusAudioConverter.canProvide20MsOpusFrame()) {
+				playerState = READY;
+				return true;
 			}
 		}
-		return playlist != null && playlist.getCurrentSong() != null && playerState == PlayerState.PLAYING;
+
+		return false;
 	}
 
 	@Override
@@ -77,53 +81,48 @@ public class OpusPlayer implements IOpusPlayer {
 	}
 
 	@Override
-	public PlayerState getState() {
+	public PlayState getPlayState() {
+		return playState;
+	}
+
+	@Override
+	public PlayerState getPlayerState() {
 		return playerState;
 	}
 
 	@Override
 	public void play(boolean forceRestart) {
-		if (playlist != null && playlist.getCurrentSong() != null) {
-			if (playerState == PLAYING && (playlist.getCurrentSong() != currentSong || forceRestart)) {
-				stop();
-			}
+		if (playState == PAUSED) {
+			playState = PLAYING;
+		} else if (playState == STOPPED) {
+			currentSong = guildMain.getPlaylists().getCurrent().getCurrentSong();
+			playState = PLAYING;
+		}
 
-			if (playerState == PlayerState.STOPPED || playerState == WAITING_FOR_NEXT_SONG) {
-				if (playlist.getCurrentSong().audioTrackCacheState == AudioTrackCacheState.NONE) {
-					setPlayerState(WAITING_FOR_CACHE);
-					guildMain.getCommandQueue().add(new CacheSongCommand(playlist.getCurrentSong()));
-				} else {
-					playlist.getCurrentSong().getAudioTrack().start();
-					opusAudioConverter.setInputStream(playlist.getCurrentSong().getAudioTrack().getInputStream());
-					currentTrackProgress = 0;
-					setPlayerState(PlayerState.WAITING_FOR_SONG_TO_START);
-				}
-			} else if (playerState == PlayerState.PAUSED) {
-				setPlayerState(PlayerState.PLAYING);
-			} else if (playerState == WAITING_FOR_CACHE) {
-				if (currentSong.audioTrackCacheState == AudioTrackCacheState.CACHED) {
-					playlist.getCurrentSong().getAudioTrack().start();
-					opusAudioConverter.setInputStream(playlist.getCurrentSong().getAudioTrack().getInputStream());
-					currentTrackProgress = 0;
-					setPlayerState(PlayerState.WAITING_FOR_SONG_TO_START);
-				}
+		if (currentSong.audioTrackCacheState == NONE) {
+			playerState = WAITING_FOR_CACHE;
+			guildMain.getCommandQueue().add(new CacheSongCommand(currentSong));
+		} else if (currentSong.audioTrackCacheState == WORKING) {
+			playerState = WAITING_FOR_CACHE;
+		} else if (currentSong.audioTrackCacheState == CACHED) {
+			if (forceRestart || currentSong.getAudioTrack().getInputStream() == null) {
+				currentSong.getAudioTrack().start();
 			}
-			currentSong = playlist.getCurrentSong();
-		} else {
-			currentSong = null;
+			opusAudioConverter.setInputStream(currentSong.getAudioTrack().getInputStream());
+			playerState = WAITING_FOR_SONG_TO_START;
 		}
 	}
 
 	@Override
 	public void pause() {
-		if (playerState == PlayerState.PLAYING) {
-			setPlayerState(PlayerState.PAUSED);
+		if (playState == PLAYING) {
+			playState = PAUSED;
 		}
 	}
 
 	@Override
 	public void stop() {
-		setPlayerState(PlayerState.STOPPED);
+		playState = STOPPED;
 
 		if (currentSong != null) {
 			currentSong.getAudioTrack().stop();
@@ -168,11 +167,9 @@ public class OpusPlayer implements IOpusPlayer {
 
 	@Override
 	public void seek(long position) {
-		if (playlist != null && playlist.getCurrentSong() != null) {
-			if (playlist.getCurrentSong().getAudioTrack().seek(position)) {
-				currentTrackProgress = position;
-				play(true);
-			}
+		// TODO: fix playback alignment by flushing the converter
+		if (currentSong.getAudioTrack().seek(position)) {
+			currentTrackProgress = position;
 		}
 	}
 
@@ -182,17 +179,47 @@ public class OpusPlayer implements IOpusPlayer {
 		seek(position);
 	}
 
-	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {
-		this.playlist = event.newPlaylist;
+	private void setSong(Song song) {
+		if (currentSong != null && currentSong.getAudioTrack() != null) {
+			currentSong.getAudioTrack().stop();
+		}
+		currentSong = song;
+		currentTrackProgress = 0;
 
-		if (playerState == PlayerState.PLAYING) {
-			play(true);
+		if (currentSong != null) {
+			if (playState == PLAYING || playState == PAUSED) {
+				play(true);
+			}
+		}
+	}
+
+	private void onPlaylistChangeCurrent(PlaylistChangeCurrentEvent event) {
+		Main.LOGGER.log(Logger.DEBUG, "changing playlist from " +
+				                (event.oldPlaylist == null ? "null" : event.oldPlaylist.getName())
+				                + " to " +
+				                (event.newPlaylist == null ? "null" : event.newPlaylist.getName())
+		               );
+
+		if (event.newPlaylist == null) {
+			setSong(null);
+		} else {
+			setSong(event.newPlaylist.getCurrentSong());
 		}
 	}
 
 	private void onSongChangeCurrent(SongChangeCurrentEvent event) {
-		if (playerState == PlayerState.PLAYING) {
-			play(true);
+		if (currentSong != event.oldSong) {
+			return;
+		}
+
+		Main.LOGGER.log(Logger.DEBUG, "changing song from " +
+				                (event.oldSong == null ? "null" : event.oldSong.getFormattedName())
+				                + " to " +
+				                (event.newSong == null ? "null" : event.newSong.getFormattedName())
+		               );
+
+		if (currentSong != null) {
+			setSong(event.newSong);
 		}
 	}
 

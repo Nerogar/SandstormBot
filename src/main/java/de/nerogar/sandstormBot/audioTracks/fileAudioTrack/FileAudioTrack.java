@@ -49,6 +49,7 @@ public class FileAudioTrack implements IAudioTrack {
 	public void stop() {
 		if (process != null) {
 			process.destroy();
+			process = null;
 		}
 	}
 

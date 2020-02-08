@@ -45,7 +45,9 @@ public class Playlists implements IPlaylists {
 		IPlaylist oldPlaylist = current;
 		if (playlists.contains(playlist)) {
 			current = playlist;
-			eventManager.trigger(new PlaylistChangeCurrentEvent(oldPlaylist, playlist));
+			if (oldPlaylist != current) {
+				eventManager.trigger(new PlaylistChangeCurrentEvent(oldPlaylist, playlist));
+			}
 		} else {
 			throw new UnsupportedOperationException("can not set playlist as current, because it is not part of this playlist list.");
 		}

@@ -1,6 +1,7 @@
 package de.nerogar.sandstormBot.system.guiSystem;
 
 import de.nerogar.sandstormBot.gui.MessagePanel;
+import de.nerogar.sandstormBotApi.opusPlayer.PlayState;
 import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
 import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.IGuildMain;
@@ -29,7 +30,7 @@ public class PlayerPanel extends MessagePanel {
 			sb.append("not playing anything\n");
 			sb.append("⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛");
 		} else {
-			if (guildMain.getPlayer().getState() == PlayerState.PAUSED) {
+			if (guildMain.getPlayer().getPlayState() == PlayState.PAUSED) {
 				sb.append("❚❚ ");
 			} else {
 				sb.append("▶ ");

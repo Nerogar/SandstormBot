@@ -181,8 +181,7 @@ public class Playlist implements IPlaylist, IModifiablePlaylist {
 
 	@Override
 	public void remove(Song song) {
-		Song currentSong = getCurrentSong();
-		removeAll((s, index, invocation) -> s == currentSong);
+		removeAll((s, index, invocation) -> s == song);
 	}
 
 	@Override
