@@ -7,7 +7,7 @@ import de.nerogar.sandstormBotApi.persistence.entities.SongEntity;
 import java.time.Instant;
 import java.time.ZoneId;
 
-public class Song {
+public final class Song {
 
 	private IAudioTrack          audioTrack;
 	public  AudioTrackCacheState audioTrackCacheState;

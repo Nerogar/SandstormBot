@@ -2,9 +2,9 @@ package de.nerogar.sandstormBot.command;
 
 import de.nerogar.sandstormBot.GuildMain;
 import de.nerogar.sandstormBot.Main;
-import de.nerogar.sandstormBotApi.UserGroup;
 import de.nerogar.sandstormBot.command.userCommands.*;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.UserGroup;
 import de.nerogar.sandstormBotApi.command.ICommand;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.api.entities.Member;
@@ -31,6 +31,7 @@ public class UserCommands {
 		userCommands.add(new RemoveCommand());
 		userCommands.add(new PreviousCommand());
 		userCommands.add(new PlaylistCommand());
+		userCommands.add(new VolumeCommand());
 	}
 
 	private UserGroup getUserGroup(Member member) {

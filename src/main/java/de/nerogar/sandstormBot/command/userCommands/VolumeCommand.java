@@ -1,20 +1,21 @@
 package de.nerogar.sandstormBot.command.userCommands;
 
-import de.nerogar.sandstormBotApi.UserGroup;
-import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
 import de.nerogar.sandstormBotApi.IGuildMain;
+import de.nerogar.sandstormBotApi.UserGroup;
 import de.nerogar.sandstormBotApi.command.CommandResults;
 import de.nerogar.sandstormBotApi.command.ICommandResult;
 import de.nerogar.sandstormBotApi.command.IUserCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-public class TogglePauseCommand implements IUserCommand {
+public class VolumeCommand implements IUserCommand {
+
+	private String[] commandSplit;
 
 	@Override
 	public boolean accepts(String command, String[] commandSplit) {
-		if (command.isBlank()) return false;
-		return commandSplit[0].equals("togglepause");
+		if (commandSplit.length != 2) return false;
+		return commandSplit[0].equals("volume");
 	}
 
 	@Override
@@ -24,20 +25,17 @@ public class TogglePauseCommand implements IUserCommand {
 
 	@Override
 	public void setCommandString(VoiceChannel voiceChannel, Member member, String command, String[] commandSplit) {
+		this.commandSplit = commandSplit;
 	}
 
 	@Override
 	public IUserCommand newInstance() {
-		return new TogglePauseCommand();
+		return new VolumeCommand();
 	}
 
 	@Override
 	public ICommandResult execute(IGuildMain guildMain) {
-		if (guildMain.getPlayer().getState() == PlayerState.PLAYING) {
-			guildMain.getPlayer().pause();
-		} else {
-			guildMain.getPlayer().play(false);
-		}
+		guildMain.getPlayer().setVolumeModifier("command", Float.parseFloat(commandSplit[1]));
 		return CommandResults.success();
 	}
 }

@@ -13,6 +13,9 @@ import de.nerogar.sandstormBotApi.opusPlayer.PlayerState;
 import de.nerogar.sandstormBotApi.opusPlayer.Song;
 import de.nerogar.sandstormBotApi.playlist.IPlaylist;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static de.nerogar.sandstormBotApi.opusPlayer.PlayerState.*;
 
 public class OpusPlayer implements IOpusPlayer {
@@ -23,9 +26,11 @@ public class OpusPlayer implements IOpusPlayer {
 	private OpusAudioConverter opusAudioConverter;
 	private PlayerState        playerState;
 
-	private IPlaylist playlist;
-	private Song      currentSong;
-	private long      currentTrackProgress;
+	private IPlaylist          playlist;
+	private Song               currentSong;
+	private long               currentTrackProgress;
+	private Map<String, Float> volumeModifierMap;
+	private String             irFilter;
 
 	public OpusPlayer(EventManager eventManager, IGuildMain guildMain) {
 		this.eventManager = eventManager;
@@ -33,6 +38,8 @@ public class OpusPlayer implements IOpusPlayer {
 
 		setPlayerState(PlayerState.STOPPED);
 		opusAudioConverter = new OpusAudioConverter();
+
+		volumeModifierMap = new ConcurrentHashMap<>();
 
 		eventManager.register(PlaylistChangeCurrentEvent.class, this::onPlaylistChangeCurrent);
 		eventManager.register(SongChangeCurrentEvent.class, this::onSongChangeCurrent);
@@ -130,13 +137,23 @@ public class OpusPlayer implements IOpusPlayer {
 	}
 
 	@Override
-	public void setVolume(float volume) {
-		// not yet implemented
+	public void setVolumeModifier(String name, float volume) {
+		if (volume == 0) {
+			volumeModifierMap.remove(name);
+		} else {
+			volumeModifierMap.put(name, volume);
+		}
+
+		float combinedVolume = 0;
+		for (Float value : volumeModifierMap.values()) {
+			combinedVolume += value;
+		}
+		opusAudioConverter.setVolume(combinedVolume);
 	}
 
 	@Override
 	public void setIrFilter(String fileName) {
-		// not yet implemented
+		irFilter = fileName;
 	}
 
 	@Override

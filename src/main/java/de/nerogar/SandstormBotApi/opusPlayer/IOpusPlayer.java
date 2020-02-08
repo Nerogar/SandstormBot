@@ -42,12 +42,15 @@ public interface IOpusPlayer {
 	 */
 	void stop();
 
+
 	/**
-	 * Sets the volume in dB where 0dB is the maximum volume.
+	 * Sets a named volume modifier in dB where 0dB is the maximum volume.
+	 * To reset the modifier set it to 0 dN.
 	 *
+	 * @param name the name of the modifier
 	 * @param volume the volume
 	 */
-	void setVolume(float volume);
+	void setVolumeModifier(String name, float volume);
 
 	/**
 	 * Sets the file name of the impulse response audio filter to use.

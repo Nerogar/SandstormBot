@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-public class SongEntity extends PersistenceEntity {
+public final class SongEntity extends PersistenceEntity {
 
 	private static final String   ID_COLUMN_NAME = "SongId";
 	private static final String[] COLUMN_NAMES   = {
