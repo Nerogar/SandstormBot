@@ -1,7 +1,9 @@
 package de.nerogar.sandstormBot;
 
 import de.nerogar.sandstormBot.player.OpusPlayer;
-import net.dv8tion.jda.core.audio.AudioSendHandler;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
+
+import java.nio.ByteBuffer;
 
 public class FFmpegAudioPlayerSendHandler implements AudioSendHandler {
 
@@ -17,8 +19,8 @@ public class FFmpegAudioPlayerSendHandler implements AudioSendHandler {
 	}
 
 	@Override
-	public byte[] provide20MsAudio() {
-		return player.nextFrame();
+	public ByteBuffer provide20MsAudio() {
+		return ByteBuffer.wrap(player.nextFrame());
 	}
 
 	@Override

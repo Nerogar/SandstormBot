@@ -2,8 +2,8 @@ package de.nerogar.sandstormBot.player;
 
 import de.nerogar.sandstormBot.Main;
 import de.nerogar.sandstormBot.PlayerSettings;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 import java.util.*;
 

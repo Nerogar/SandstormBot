@@ -3,10 +3,11 @@ package de.nerogar.sandstormBot;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.PrivateChannel;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
@@ -87,8 +88,14 @@ public class Main {
 
 		MessageListener messageListener = new MessageListener();
 
-		JDA jda = new JDABuilder(SETTINGS.loginToken)
-				.addEventListener(messageListener)
+		JDA jda = JDABuilder.create(SETTINGS.loginToken,
+		                                 GatewayIntent.GUILD_MEMBERS,
+		                                 GatewayIntent.GUILD_VOICE_STATES,
+		                                 GatewayIntent.GUILD_PRESENCES,
+		                                 GatewayIntent.GUILD_MESSAGE_REACTIONS,
+		                                 GatewayIntent.GUILD_MESSAGES,
+		                                 GatewayIntent.GUILD_VOICE_STATES)
+				.addEventListeners(messageListener)
 				.build();
 
 		jda.awaitReady();

@@ -3,8 +3,8 @@ package de.nerogar.sandstormBot;
 import de.nerogar.sandstormBot.musicMetaProvider.MusicMetaProviders;
 import de.nerogar.sandstormBot.musicProvider.MusicProvider;
 import de.nerogar.sandstormBot.player.*;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.*;
 
 import java.util.*;
 
@@ -139,9 +139,6 @@ public class PlayerMain extends Thread {
 
 	public synchronized void acceptCommand(MessageChannel channel, Member member, String commandString) {
 		if (commandString.contains("```")) {
-			if (member != null) {
-				guild.getController().setNickname(member, "Hackerman").queue();
-			}
 			return;
 		}
 

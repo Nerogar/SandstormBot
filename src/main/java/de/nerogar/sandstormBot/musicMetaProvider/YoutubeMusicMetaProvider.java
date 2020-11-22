@@ -8,7 +8,7 @@ import de.nerogar.sandstormBot.PlayerMain;
 import de.nerogar.sandstormBot.ProcessHelper;
 import de.nerogar.sandstormBot.musicProvider.MusicProviders;
 import de.nerogar.sandstormBot.player.Song;
-import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.io.IOException;
 import java.util.*;
