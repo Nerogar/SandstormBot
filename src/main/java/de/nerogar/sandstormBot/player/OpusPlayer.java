@@ -201,7 +201,7 @@ public class OpusPlayer {
 				"-hide_banner",
 				"-ss", String.format(Locale.ROOT, "%.3f", progress / 1000d),
 				"-t", String.valueOf(VOLUME_DETECT_DURATION),
-				"-i", filename
+				"-i", Main.MUSIC_CACHE_DIRECTORY + filename
 		                                        ));
 
 		if (playbackSettings.filter != null) {
